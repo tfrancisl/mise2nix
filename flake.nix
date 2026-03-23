@@ -120,7 +120,8 @@
           '';
           # node "18" is not in runtimes.nix map (supported: 20, 22, 24, 25); forces a throw
           devShell = self.lib.fromMiseToml toml {inherit pkgs;};
-          result = builtins.tryEval (builtins.deepSeq devShell.nativeBuildInputs devShell);
+          # Force drvPath (not nativeBuildInputs) — deepSeq on nativeBuildInputs causes stack overflow
+          result = builtins.tryEval (builtins.seq devShell.drvPath null);
         in
           pkgs.runCommand "unsupported-version-error" {} ''
             ${
@@ -135,9 +136,10 @@
             [tools]
             nonexistent_tool_xyz = "latest"
           '';
-          # fromMiseToml returns a lazy mkShell; force nativeBuildInputs to trigger the throw
+          # fromMiseToml returns a lazy mkShell; force drvPath (not nativeBuildInputs) to trigger the throw
           devShell = self.lib.fromMiseToml toml {inherit pkgs;};
-          result = builtins.tryEval (builtins.deepSeq devShell.nativeBuildInputs devShell);
+          # Force drvPath (not nativeBuildInputs) — deepSeq on nativeBuildInputs causes stack overflow
+          result = builtins.tryEval (builtins.seq devShell.drvPath null);
         in
           pkgs.runCommand "unknown-tool-error" {} ''
             ${
@@ -193,6 +195,91 @@
               exit 1
             fi
             echo "PASS: full integration (tools + env) verified" > $out
+          '';
+
+        resolve-pipx-black = let
+          toml = builtins.toFile "pipx-test.toml" ''
+            [tools]
+            "pipx:black" = "latest"
+          '';
+          devShell = self.lib.fromMiseToml toml {inherit pkgs;};
+        in
+          pkgs.runCommand "resolve-pipx-black" {} ''
+            echo "devShell: ${devShell}"
+            echo "PASS: pipx:black resolved" > $out
+          '';
+
+        resolve-npm-prettier = let
+          toml = builtins.toFile "npm-test.toml" ''
+            [tools]
+            "npm:prettier" = "latest"
+          '';
+          devShell = self.lib.fromMiseToml toml {inherit pkgs;};
+        in
+          pkgs.runCommand "resolve-npm-prettier" {} ''
+            echo "devShell: ${devShell}"
+            echo "PASS: npm:prettier resolved" > $out
+          '';
+
+        resolve-cargo-ripgrep = let
+          toml = builtins.toFile "cargo-test.toml" ''
+            [tools]
+            "cargo:ripgrep" = "latest"
+          '';
+          devShell = self.lib.fromMiseToml toml {inherit pkgs;};
+        in
+          pkgs.runCommand "resolve-cargo-ripgrep" {} ''
+            echo "devShell: ${devShell}"
+            echo "PASS: cargo:ripgrep resolved" > $out
+          '';
+
+        unknown-backend-error = let
+          toml = builtins.toFile "unknown-backend.toml" ''
+            [tools]
+            "ubi:some-tool" = "latest"
+          '';
+          devShell = self.lib.fromMiseToml toml {inherit pkgs;};
+          # Force drvPath (not nativeBuildInputs) — deepSeq on nativeBuildInputs causes stack overflow
+          result = builtins.tryEval (builtins.seq devShell.drvPath null);
+        in
+          pkgs.runCommand "unknown-backend-error" {} ''
+            ${
+              if result.success
+              then ''echo "FAIL: should have thrown for unknown backend" && exit 1''
+              else ''echo "PASS: unknown backend correctly throws" > $out''
+            }
+          '';
+
+        unmapped-tool-error = let
+          toml = builtins.toFile "unmapped-tool.toml" ''
+            [tools]
+            "pipx:nonexistent_tool_xyz" = "latest"
+          '';
+          devShell = self.lib.fromMiseToml toml {inherit pkgs;};
+          # Force drvPath (not nativeBuildInputs) — deepSeq on nativeBuildInputs causes stack overflow
+          result = builtins.tryEval (builtins.seq devShell.drvPath null);
+        in
+          pkgs.runCommand "unmapped-tool-error" {} ''
+            ${
+              if result.success
+              then ''echo "FAIL: should have thrown for unmapped pipx tool" && exit 1''
+              else ''echo "PASS: unmapped tool correctly throws" > $out''
+            }
+          '';
+
+        backend-overrides-win = let
+          toml = builtins.toFile "backend-override.toml" ''
+            [tools]
+            "pipx:black" = "latest"
+          '';
+          devShell = self.lib.fromMiseToml toml {
+            inherit pkgs;
+            overrides = {"pipx:black" = pkgs.hello;};
+          };
+        in
+          pkgs.runCommand "backend-overrides-win" {} ''
+            echo "devShell with override: ${devShell}"
+            echo "PASS: backend override accepted" > $out
           '';
       }
     );

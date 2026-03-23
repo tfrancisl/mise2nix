@@ -333,10 +333,10 @@
           '';
         in
           pkgs.runCommand "wrapper-passthrough"
-            {nativeBuildInputs = [miseWrapper pkgs.mise];}
-            ''
-              mise --version > $out
-            '';
+          {nativeBuildInputs = [miseWrapper pkgs.mise];}
+          ''
+            mise --version > $out
+          '';
 
         wrapper-in-packages = let
           toml = builtins.toFile "wrapper-pkg-test.toml" ''
@@ -348,6 +348,143 @@
           pkgs.runCommand "wrapper-in-packages" {} ''
             echo "devShell with wrapper: ${devShell}"
             echo "PASS: wrapper-in-packages" > $out
+          '';
+
+        wrapper-use-writes-toml = let
+          miseWrapper = pkgs.writeShellScriptBin "mise" ''
+            if [ "$1" != "use" ]; then
+              exec ${pkgs.mise}/bin/mise "$@"
+            fi
+
+            # Handle: mise use [flags] TOOL_SPEC
+            shift  # remove "use" from args
+
+            TOOL_SPEC=""
+            for arg in "$@"; do
+              case "$arg" in
+                -*) ;;
+                *) TOOL_SPEC="$arg"; break ;;
+              esac
+            done
+
+            if [ -z "$TOOL_SPEC" ]; then
+              exec ${pkgs.mise}/bin/mise use "$@"
+            fi
+
+            if [[ "$TOOL_SPEC" == *@* ]]; then
+              VERSION="''${TOOL_SPEC##*@}"
+              TOOL="''${TOOL_SPEC%@*}"
+            else
+              VERSION="latest"
+              TOOL="$TOOL_SPEC"
+            fi
+
+            TOML_FILE="''${MISE_CONFIG_FILE:-mise.toml}"
+            ENTRY="\"''${TOOL}\" = \"''${VERSION}\""
+
+            if [ ! -f "$TOML_FILE" ]; then
+              printf '[tools]\n%s\n' "$ENTRY" > "$TOML_FILE"
+            elif ${pkgs.gnugrep}/bin/grep -q '^\[tools\]' "$TOML_FILE"; then
+              ${pkgs.gnused}/bin/sed -i "/^\[tools\]/a ''${ENTRY}" "$TOML_FILE"
+            else
+              printf '\n[tools]\n%s\n' "$ENTRY" >> "$TOML_FILE"
+            fi
+
+            if [ -n "''${DIRENV_DIR:-}" ]; then
+              RELOAD_CMD="direnv reload"
+            else
+              RELOAD_CMD="nix develop"
+            fi
+
+            echo "[mise2nix] '$TOOL' written to $TOML_FILE."
+            echo "[mise2nix] Tool resolution is Nix-managed. Run \`''${RELOAD_CMD}\` to enter the updated shell."
+          '';
+          tomlFixture = builtins.toFile "fixture.toml" ''
+            [tools]
+            node = "22"
+          '';
+        in
+          pkgs.runCommand "wrapper-use-writes-toml"
+          {nativeBuildInputs = [miseWrapper pkgs.gnused pkgs.gnugrep];}
+          ''
+            cp ${tomlFixture} mise.toml
+            chmod +w mise.toml
+            MISE_CONFIG_FILE=mise.toml mise use "pipx:black"
+            if ${pkgs.gnugrep}/bin/grep -q '"pipx:black" = "latest"' mise.toml; then
+              echo "PASS: entry written to mise.toml" > $out
+            else
+              echo "FAIL: entry not found in mise.toml"
+              cat mise.toml
+              exit 1
+            fi
+          '';
+
+        wrapper-use-prints-message = let
+          miseWrapper = pkgs.writeShellScriptBin "mise" ''
+            if [ "$1" != "use" ]; then
+              exec ${pkgs.mise}/bin/mise "$@"
+            fi
+
+            # Handle: mise use [flags] TOOL_SPEC
+            shift  # remove "use" from args
+
+            TOOL_SPEC=""
+            for arg in "$@"; do
+              case "$arg" in
+                -*) ;;
+                *) TOOL_SPEC="$arg"; break ;;
+              esac
+            done
+
+            if [ -z "$TOOL_SPEC" ]; then
+              exec ${pkgs.mise}/bin/mise use "$@"
+            fi
+
+            if [[ "$TOOL_SPEC" == *@* ]]; then
+              VERSION="''${TOOL_SPEC##*@}"
+              TOOL="''${TOOL_SPEC%@*}"
+            else
+              VERSION="latest"
+              TOOL="$TOOL_SPEC"
+            fi
+
+            TOML_FILE="''${MISE_CONFIG_FILE:-mise.toml}"
+            ENTRY="\"''${TOOL}\" = \"''${VERSION}\""
+
+            if [ ! -f "$TOML_FILE" ]; then
+              printf '[tools]\n%s\n' "$ENTRY" > "$TOML_FILE"
+            elif ${pkgs.gnugrep}/bin/grep -q '^\[tools\]' "$TOML_FILE"; then
+              ${pkgs.gnused}/bin/sed -i "/^\[tools\]/a ''${ENTRY}" "$TOML_FILE"
+            else
+              printf '\n[tools]\n%s\n' "$ENTRY" >> "$TOML_FILE"
+            fi
+
+            if [ -n "''${DIRENV_DIR:-}" ]; then
+              RELOAD_CMD="direnv reload"
+            else
+              RELOAD_CMD="nix develop"
+            fi
+
+            echo "[mise2nix] '$TOOL' written to $TOML_FILE."
+            echo "[mise2nix] Tool resolution is Nix-managed. Run \`''${RELOAD_CMD}\` to enter the updated shell."
+          '';
+          tomlFixture = builtins.toFile "fixture.toml" ''
+            [tools]
+          '';
+        in
+          pkgs.runCommand "wrapper-use-prints-message"
+          {nativeBuildInputs = [miseWrapper pkgs.gnused pkgs.gnugrep];}
+          ''
+            cp ${tomlFixture} mise.toml
+            chmod +w mise.toml
+            MISE_CONFIG_FILE=mise.toml mise use "npm:prettier" > output.txt 2>&1
+            if ${pkgs.gnugrep}/bin/grep -q "mise2nix" output.txt; then
+              echo "PASS: mise2nix attribution in output" > $out
+            else
+              echo "FAIL: no mise2nix attribution"
+              cat output.txt
+              exit 1
+            fi
           '';
       }
     );

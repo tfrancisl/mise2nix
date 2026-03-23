@@ -25,11 +25,13 @@ zero manual Nix required for common toolsets.
 - [x] Unknown tools accepted via `extraPackages` or `overrides` argument — *Validated in Phase 03: utility-tool-resolution-overrides-api*
 - [x] Unknown tool without override throws a helpful Nix eval error — *Validated in Phase 03: utility-tool-resolution-overrides-api*
 - [x] `[env]` section mapped to `mkShell` env vars — *Validated in Phase 04: env-vars-full-devshell-assembly*
+- [x] README with usage examples and supported tool table — *Validated in Phase 05: tests-documentation-and-publish*
+- [x] Example flake demonstrating common mise.toml → devShell patterns — *Validated in Phase 05: tests-documentation-and-publish*
+- [x] Flake published with a stable outputs interface — *Validated in Phase 05: tests-documentation-and-publish*
 
 ### Active
-- [ ] README with usage examples and supported tool table
-- [ ] Example flake demonstrating common mise.toml → devShell patterns
-- [ ] Flake published with a stable outputs interface
+
+*(none — all v0.1.0 requirements validated)*
 
 ### Out of Scope
 
@@ -92,4 +94,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-23 — Phase 04: env-vars-full-devshell-assembly complete*
+*Last updated: 2026-03-23 — Phase 05: tests-documentation-and-publish complete — v0.1.0 tagged*

@@ -68,6 +68,65 @@
 
     resolvedPackages = builtins.attrValues (builtins.mapAttrs resolve tools);
     envVars = envMod.mkEnvVars env;
+
+    # Wrapper that intercepts `mise use` and passes all other subcommands through
+    # to the real mise binary unchanged (WRAP-01, DX-06).
+    #
+    # For `mise use`: writes the tool entry to mise.toml via GNU sed (cross-platform
+    # safe — BSD sed on macOS uses different -i syntax) and prints a mise2nix-attributed
+    # reload message (WRAP-02, DX-05). Does NOT call the real `mise use` to avoid
+    # triggering tool installs (D-01).
+    #
+    # All external tools are referenced by Nix store path because writeShellScriptBin
+    # does not add anything to PATH.
+    miseWrapper = pkgs.writeShellScriptBin "mise" ''
+      if [ "$1" != "use" ]; then
+        exec ${pkgs.mise}/bin/mise "$@"
+      fi
+
+      # Handle: mise use [flags] TOOL_SPEC
+      shift  # remove "use" from args
+
+      TOOL_SPEC=""
+      for arg in "$@"; do
+        case "$arg" in
+          -*) ;;
+          *) TOOL_SPEC="$arg"; break ;;
+        esac
+      done
+
+      if [ -z "$TOOL_SPEC" ]; then
+        exec ${pkgs.mise}/bin/mise use "$@"
+      fi
+
+      if [[ "$TOOL_SPEC" == *@* ]]; then
+        VERSION="''${TOOL_SPEC##*@}"
+        TOOL="''${TOOL_SPEC%@*}"
+      else
+        VERSION="latest"
+        TOOL="$TOOL_SPEC"
+      fi
+
+      TOML_FILE="''${MISE_CONFIG_FILE:-mise.toml}"
+      ENTRY="\"''${TOOL}\" = \"''${VERSION}\""
+
+      if [ ! -f "$TOML_FILE" ]; then
+        printf '[tools]\n%s\n' "$ENTRY" > "$TOML_FILE"
+      elif ${pkgs.gnugrep}/bin/grep -q '^\[tools\]' "$TOML_FILE"; then
+        ${pkgs.gnused}/bin/sed -i "/^\[tools\]/a ''${ENTRY}" "$TOML_FILE"
+      else
+        printf '\n[tools]\n%s\n' "$ENTRY" >> "$TOML_FILE"
+      fi
+
+      if [ -n "''${DIRENV_DIR:-}" ]; then
+        RELOAD_CMD="direnv reload"
+      else
+        RELOAD_CMD="nix develop"
+      fi
+
+      echo "[mise2nix] '$TOOL' written to $TOML_FILE."
+      echo "[mise2nix] Tool resolution is Nix-managed. Run \`''${RELOAD_CMD}\` to enter the updated shell."
+    '';
   in
     pkgs.mkShell ({
         # Prevent mise from trying to download/install tools that Nix already provides.
@@ -76,6 +135,6 @@
       }
       // envVars
       // {
-        packages = [pkgs.mise] ++ resolvedPackages ++ extraPackages;
+        packages = [miseWrapper] ++ resolvedPackages ++ extraPackages;
       });
 }

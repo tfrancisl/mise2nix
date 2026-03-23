@@ -9,6 +9,18 @@ cacheable Nix shells without translating their config by hand.
 Inspired by [uv2nix](https://github.com/pyproject-nix/uv2nix): consume a configuration file,
 get Nix.
 
+## Current Milestone: v0.2.0 — Backend Tool Resolution
+
+**Goal:** Make `mise use "backend:tool"` work naturally inside a mise2nix devShell — resolving via nixpkgs tables for pipx/npm/cargo, and prompting interactively for unknowns.
+
+**Target features:**
+- `mise` wrapper (`writeShellScriptBin`) intercepts `mise use backend:tool`
+- `pipx:` → `pkgs.python3Packages.*` mapping table
+- `npm:` → `pkgs.nodePackages.*` mapping table
+- `cargo:` → `pkgs.*` mapping table (many cargo tools already in nixpkgs)
+- Unknown backends (ubi:, gh:, etc.) prompt interactively for nixpkgs attribute and write override to flake.nix
+- `fromMiseToml` resolution extended to understand `backend:tool` syntax
+
 ## Core Value
 
 `mise2nix.lib.fromMiseToml ./mise.toml { inherit pkgs; }` produces a working devShell —
@@ -31,7 +43,12 @@ zero manual Nix required for common toolsets.
 
 ### Active
 
-*(none — all v0.1.0 requirements validated)*
+- [ ] `mise use "pipx:tool"` resolves tool via `pkgs.python3Packages.*` — *v0.2.0*
+- [ ] `mise use "npm:tool"` resolves tool via `pkgs.nodePackages.*` — *v0.2.0*
+- [ ] `mise use "cargo:tool"` resolves tool via `pkgs.*` — *v0.2.0*
+- [ ] Unknown backend prompts user for nixpkgs attribute and writes override to flake.nix — *v0.2.0*
+- [ ] `fromMiseToml` parses `backend:tool` syntax in `[tools]` section — *v0.2.0*
+- [ ] `mise` wrapper replaces bare `pkgs.mise` in devShell — *v0.2.0*
 
 ### Out of Scope
 
@@ -94,4 +111,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-23 — Phase 05: tests-documentation-and-publish complete — v0.1.0 tagged*
+*Last updated: 2026-03-23 — Milestone v0.2.0 started — Backend Tool Resolution*

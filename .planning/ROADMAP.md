@@ -1,21 +1,16 @@
 # Roadmap: mise2nix
 
-## Overview
+## Milestones
 
-Build mise2nix — a pure Nix flake library that reads `mise.toml` and produces a `devShells` output. Five phases take the project from a flake skeleton to a published, documented library covering tool resolution, env vars, overrides, and tests.
+- 🚧 **v0.1.0 Foundation** - Phases 1-5 (in progress)
+- 📋 **v0.2.0 Backend Tool Resolution** - Phases 6-8 (planned)
 
 ## Phases
 
-**Phase Numbering:**
-- Integer phases (1, 2, 3): Planned milestone work
+<details>
+<summary>🚧 v0.1.0 Foundation (Phases 1-5) - In Progress</summary>
 
-- [x] **Phase 1: Flake Scaffold + Parser** - Initialize flake.nix and fromMiseToml skeleton that returns an empty devShell
-- [x] **Phase 2: Runtime Tool Resolution** - Map major runtimes to version-specific nixpkgs attributes
-- [ ] **Phase 3: Utility Tool Resolution + Overrides API** - Map utilities and expose extraPackages/overrides
-- [ ] **Phase 4: Env Vars + Full devShell Assembly** - Read [env] section and wire full devShell integration
-- [ ] **Phase 5: Tests, Documentation, and Publish** - nix flake check, README, example flake, git tag
-
-## Phase Details
+**Milestone Goal:** A pure Nix flake library that reads `mise.toml` and produces a working `devShells` output — covering major runtimes, utilities, env vars, overrides, tests, and docs.
 
 ### Phase 1: Flake Scaffold + Parser
 **Goal**: A working flake skeleton that reads `mise.toml` and returns an empty devShell — `nix flake show` and `nix develop` both work.
@@ -89,22 +84,66 @@ Plans:
   2. `README.md` contains: project description, quickstart, supported tools table, API docs for `fromMiseToml`, overrides pattern, limitations
   3. `example/` directory contains a realistic `mise.toml` and `flake.nix` showing mise2nix usage
   4. Git tag `v0.1.0` exists; flake URL is documented in README
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
 - [ ] 05-01: Write nix flake checks for all major code paths
 - [ ] 05-02: Write README.md with full documentation
 - [ ] 05-03: Create example/ directory with realistic usage example and publish v0.1.0
 
+</details>
+
+### v0.2.0 Backend Tool Resolution (Planned)
+
+**Milestone Goal:** Make `mise use "backend:tool"` work naturally inside a mise2nix devShell — resolving known backends via nixpkgs tables and prompting interactively for unknowns.
+
+### Phase 6: Backend Syntax Detection + Mapping Tables
+**Goal**: `fromMiseToml` understands `backend:tool` syntax and resolves known backends (pipx, npm, cargo) via nixpkgs mapping tables — unknown backends and unmapped tools produce a clear error.
+**Depends on**: Phase 5
+**Requirements**: BACKEND-01, BACKEND-02, BACKEND-03, BACKEND-04, BACKEND-05
+**Success Criteria** (what must be TRUE):
+  1. `fromMiseToml` detects `backend:tool` entries in `[tools]` and routes them through backend resolvers rather than the runtime/utility cascade
+  2. `pipx:black`, `pipx:mypy`, `pipx:ruff` (and ≤9 other common tools) resolve to the correct `pkgs.python3Packages.*` attribute
+  3. `npm:prettier`, `npm:typescript`, `npm:eslint` (and ≤9 other common tools) resolve to the correct `pkgs.nodePackages.*` attribute
+  4. `cargo:ripgrep`, `cargo:bat`, `cargo:fd` (and ≤9 other common tools) resolve to the correct `pkgs.*` attribute
+  5. An unknown backend or an unmapped tool within a known backend throws a `builtins.throw` error naming the tool and explaining the `overrides`/`extraPackages` escape hatches
+**Plans**: TBD
+
+### Phase 7: Mise Wrapper Core
+**Goal**: The devShell ships a `mise` wrapper script that handles `mise use "known-backend:tool"` gracefully and passes all other subcommands through to the real mise binary unchanged.
+**Depends on**: Phase 6
+**Requirements**: WRAP-01, WRAP-02, DX-05, DX-06
+**Success Criteria** (what must be TRUE):
+  1. The devShell contains a `mise` wrapper (`writeShellScriptBin`) that shadows the real `pkgs.mise` binary
+  2. `mise run`, `mise list`, `mise exec`, and all non-`use` subcommands invoke the real `mise` binary with arguments passed through verbatim and no observable overhead
+  3. `mise use "pipx:black"` (or any known-backend tool) writes `pipx:black = "latest"` to `mise.toml` and prints a message explaining that tool resolution is Nix-managed and instructing the user to reload (e.g. `direnv reload` or `nix develop`)
+  4. Wrapper output clearly attributes the message to mise2nix so the user understands Nix is managing the resolution
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 8: Interactive Override Patching
+**Goal**: `mise use "unknown-backend:tool"` (or any unmapped tool) prompts the user interactively for a nixpkgs attribute and patches the `overrides = { ... }` argument in the nearest `flake.nix`.
+**Depends on**: Phase 7
+**Requirements**: WRAP-03
+**Success Criteria** (what must be TRUE):
+  1. Running `mise use "ubi:some-tool"` triggers an interactive prompt asking for the nixpkgs attribute path (e.g. `pkgs.some-tool`)
+  2. After the user supplies an attribute, the tool entry is written to `mise.toml` and the `overrides` attrset in the nearest `flake.nix` is patched with the new mapping
+  3. The patched `flake.nix` remains syntactically valid Nix after the write
+  4. If the user aborts the prompt (Ctrl-C or empty input), no files are modified and a clear cancellation message is shown
+**Plans**: TBD
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 1. Flake Scaffold + Parser | 2/2 | Complete | 2026-03-23 |
-| 2. Runtime Tool Resolution | 1/2 | In Progress|  |
-| 3. Utility Tool Resolution + Overrides API | 2/3 | In Progress|  |
-| 4. Env Vars + Full devShell Assembly | 1/2 | In Progress|  |
-| 5. Tests, Documentation, and Publish | 0/3 | Not started | - |
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 1. Flake Scaffold + Parser | v0.1.0 | 2/2 | Complete | 2026-03-23 |
+| 2. Runtime Tool Resolution | v0.1.0 | 1/2 | In Progress | - |
+| 3. Utility Tool Resolution + Overrides API | v0.1.0 | 2/3 | In Progress | - |
+| 4. Env Vars + Full devShell Assembly | v0.1.0 | 1/2 | In Progress | - |
+| 5. Tests, Documentation, and Publish | v0.1.0 | 0/3 | Not started | - |
+| 6. Backend Syntax Detection + Mapping Tables | v0.2.0 | 0/TBD | Not started | - |
+| 7. Mise Wrapper Core | v0.2.0 | 0/TBD | Not started | - |
+| 8. Interactive Override Patching | v0.2.0 | 0/TBD | Not started | - |

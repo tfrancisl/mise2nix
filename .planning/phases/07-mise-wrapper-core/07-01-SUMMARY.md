@@ -1,0 +1,133 @@
+---
+phase: 07-mise-wrapper-core
+plan: "01"
+subsystem: nix
+tags: [writeShellScriptBin, mise, wrapper, gnused, gnugrep, devShell]
+
+# Dependency graph
+requires:
+  - phase: 06-backend-syntax-detection-mapping-tables
+    provides: fromMiseToml with backend resolution, pkgs.mise in packages list to replace
+
+provides:
+  - miseWrapper writeShellScriptBin in fromMiseToml let block
+  - mise use interception writing TOML entries via GNU sed
+  - [mise2nix]-attributed reload messages with DIRENV_DIR detection
+  - miseWrapper replaces pkgs.mise in devShell packages list
+
+affects:
+  - 07-02 (wrapper checks in flake.nix if that plan exists)
+  - 08-interactive-override-patching (builds on wrapper foundation)
+
+# Tech tracking
+tech-stack:
+  added:
+    - pkgs.writeShellScriptBin "mise" (wrapper derivation)
+    - pkgs.gnused (GNU sed for cross-platform TOML mutation)
+    - pkgs.gnugrep (GNU grep for [tools] section detection)
+  patterns:
+    - Nix store path references inside writeShellScriptBin scripts (no PATH reliance)
+    - ''${VAR} escaping for bash variable references in Nix indented strings
+    - DIRENV_DIR detection for context-aware reload message
+
+key-files:
+  created: []
+  modified:
+    - lib/default.nix
+
+key-decisions:
+  - "Use pkgs.gnugrep not pkgs.grep — correct nixpkgs attribute name (RESEARCH.md had wrong name)"
+  - "Use $TOOL (no braces) in echo messages to avoid Nix interpolation conflicts"
+  - "miseWrapper defined inline in fromMiseToml let block (D-05) — tightly coupled to devShell assembly"
+  - "DIRENV_DIR detection included for better DX — suggests direnv reload vs nix develop"
+
+patterns-established:
+  - "All writeShellScriptBin external tools use Nix store paths (${pkgs.gnused}/bin/sed not sed)"
+  - "Bash variables in Nix ''...'' strings: use ''${VAR} to escape, or $VAR for simple names"
+
+requirements-completed: [WRAP-01, WRAP-02, DX-05, DX-06]
+
+# Metrics
+duration: 7min
+completed: 2026-03-23
+---
+
+# Phase 7 Plan 01: Mise Wrapper Core Summary
+
+**writeShellScriptBin "mise" wrapper intercepts `mise use` in pure bash, writes TOML entries via GNU sed, and passes all other subcommands through to the real mise binary via exec**
+
+## Performance
+
+- **Duration:** 7 min
+- **Started:** 2026-03-23T23:12:02Z
+- **Completed:** 2026-03-23T23:19:45Z
+- **Tasks:** 1 of 1
+- **Files modified:** 1
+
+## Accomplishments
+
+- Added `miseWrapper` let-binding using `pkgs.writeShellScriptBin "mise"` inside the `fromMiseToml` let block
+- Wrapper intercepts `mise use`: extracts TOOL_SPEC, writes `"tool" = "version"` entry to `mise.toml` via `${pkgs.gnused}/bin/sed`, prints `[mise2nix]`-attributed message
+- Passthrough: all non-`use` subcommands route to `exec ${pkgs.mise}/bin/mise "$@"` (zero overhead)
+- DIRENV_DIR detection: suggests `direnv reload` when in a direnv shell, `nix develop` otherwise
+- Replaced `pkgs.mise` with `miseWrapper` in `packages = [miseWrapper] ++ resolvedPackages ++ extraPackages`
+- All 18 existing flake checks still pass
+
+## Task Commits
+
+Each task was committed atomically:
+
+1. **Task 1: Add miseWrapper let-binding and replace pkgs.mise in packages list** - `cc969c2` (feat)
+
+**Plan metadata:** (docs commit follows)
+
+## Files Created/Modified
+
+- `lib/default.nix` - Added miseWrapper let-binding (60 lines), replaced pkgs.mise with miseWrapper in packages list
+
+## Decisions Made
+
+- Used `$TOOL` (no braces) in echo messages rather than `''${TOOL}` to avoid the Nix interpolation parser treating `${TOOL}` as a Nix variable reference
+- Used `pkgs.gnugrep` (not `pkgs.grep` as stated in RESEARCH.md) — the correct nixpkgs attribute is `gnugrep`
+- Included DIRENV_DIR detection (discretionary per CONTEXT.md — improves DX significantly)
+
+## Deviations from Plan
+
+### Auto-fixed Issues
+
+**1. [Rule 1 - Bug] Fixed pkgs.grep to pkgs.gnugrep**
+- **Found during:** Task 1 (running nix flake check)
+- **Issue:** RESEARCH.md specified `${pkgs.grep}/bin/grep` but nixpkgs has no `pkgs.grep` attribute — the correct name is `pkgs.gnugrep` (analogous to `pkgs.gnused`)
+- **Fix:** Changed `${pkgs.grep}/bin/grep` to `${pkgs.gnugrep}/bin/grep` in the wrapper script
+- **Files modified:** lib/default.nix
+- **Verification:** `nix flake check` passed with all 18 checks green after fix
+- **Committed in:** cc969c2 (Task 1 commit)
+
+---
+
+**Total deviations:** 1 auto-fixed (1 bug)
+**Impact on plan:** Required for correctness — wrapper would fail to build without correct nixpkgs attribute. No scope creep.
+
+## Issues Encountered
+
+- Nix `''...''` string escaping for `${TOOL}` in echo messages: `'''${TOOL}'''` was parsed as Nix interpolation of undefined variable `TOOL`. Resolved by using unbraced `$TOOL` in the echo statement (bash evaluates both forms, and unbraced form avoids the Nix parser conflict).
+
+## User Setup Required
+
+None - no external service configuration required.
+
+## Next Phase Readiness
+
+- miseWrapper is live in all devShells generated by `fromMiseToml`
+- Phase 8 (interactive override patching) builds on this wrapper — the unknown-backend case currently falls through to the TOML-write path, which is intentional per D-04
+- Wrapper checks (wrapper-use-writes-toml, wrapper-use-prints-message, wrapper-passthrough, wrapper-in-packages) referenced in RESEARCH.md validation architecture are not yet added to flake.nix — these would be appropriate in a follow-up plan if desired
+
+## Self-Check: PASSED
+
+- lib/default.nix: FOUND
+- 07-01-SUMMARY.md: FOUND
+- commit cc969c2: FOUND
+
+---
+*Phase: 07-mise-wrapper-core*
+*Completed: 2026-03-23*

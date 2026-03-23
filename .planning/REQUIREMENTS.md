@@ -37,14 +37,14 @@
 
 ### Wrapper
 
-- [ ] **WRAP-01**: The devShell includes a `mise` wrapper script (`writeShellScriptBin`) that intercepts `mise use` and passes all other subcommands to the real mise binary unchanged
-- [ ] **WRAP-02**: `mise use "known-backend:tool"` writes the entry to `mise.toml` and prints a clear message instructing the user to reload the devShell to apply the change
+- [x] **WRAP-01**: The devShell includes a `mise` wrapper script (`writeShellScriptBin`) that intercepts `mise use` and passes all other subcommands to the real mise binary unchanged
+- [x] **WRAP-02**: `mise use "known-backend:tool"` writes the entry to `mise.toml` and prints a clear message instructing the user to reload the devShell to apply the change
 - [ ] **WRAP-03**: `mise use "unknown-backend:tool"` or `mise use "backend:unmapped-tool"` prompts interactively for a nixpkgs attribute and patches the `overrides = { ... }` argument in the nearest `flake.nix`
 
 ### DX (v0.2.0)
 
-- [ ] **DX-05**: Wrapper output explains clearly that tool resolution is Nix-managed and what action to take next (e.g. "run `direnv reload` or `nix develop` to enter the updated shell")
-- [ ] **DX-06**: All non-`use` mise subcommands (`run`, `list`, `tasks`, `exec`, etc.) pass through to the real mise binary with no modification or overhead
+- [x] **DX-05**: Wrapper output explains clearly that tool resolution is Nix-managed and what action to take next (e.g. "run `direnv reload` or `nix develop` to enter the updated shell")
+- [x] **DX-06**: All non-`use` mise subcommands (`run`, `list`, `tasks`, `exec`, etc.) pass through to the real mise binary with no modification or overhead
 
 ---
 
@@ -100,10 +100,10 @@
 | BACKEND-03 | Phase 6 | Complete |
 | BACKEND-04 | Phase 6 | Complete |
 | BACKEND-05 | Phase 6 | Complete |
-| WRAP-01 | Phase 7 | Pending |
-| WRAP-02 | Phase 7 | Pending |
-| DX-05 | Phase 7 | Pending |
-| DX-06 | Phase 7 | Pending |
+| WRAP-01 | Phase 7 | Complete |
+| WRAP-02 | Phase 7 | Complete |
+| DX-05 | Phase 7 | Complete |
+| DX-06 | Phase 7 | Complete |
 | WRAP-03 | Phase 8 | Pending |
 
 ---

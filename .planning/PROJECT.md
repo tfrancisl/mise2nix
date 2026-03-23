@@ -44,7 +44,6 @@ zero manual Nix required for common toolsets.
 ### Active
 
 - [ ] Unknown backend prompts user for nixpkgs attribute and writes override to flake.nix — *v0.2.0*
-- [ ] `mise` wrapper replaces bare `pkgs.mise` in devShell — *v0.2.0*
 
 ### Validated (v0.2.0)
 
@@ -52,6 +51,9 @@ zero manual Nix required for common toolsets.
 - [x] `mise use "pipx:tool"` resolves tool via `pkgs.python3Packages.*` — *Validated in Phase 06: backend-syntax-detection-mapping-tables*
 - [x] `mise use "npm:tool"` resolves tool via `pkgs.nodePackages.*` — *Validated in Phase 06: backend-syntax-detection-mapping-tables*
 - [x] `mise use "cargo:tool"` resolves tool via `pkgs.*` — *Validated in Phase 06: backend-syntax-detection-mapping-tables*
+- [x] `mise` wrapper replaces bare `pkgs.mise` in devShell — *Validated in Phase 07: mise-wrapper-core*
+- [x] `mise use backend:tool` writes entry to `mise.toml` and prints Nix-managed reload message — *Validated in Phase 07: mise-wrapper-core*
+- [x] All non-`use` subcommands pass through to real mise binary unchanged — *Validated in Phase 07: mise-wrapper-core*
 
 ### Out of Scope
 
@@ -114,4 +116,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-23 — Phase 06 complete — backend detection + pipx/npm/cargo mapping tables implemented and verified*
+*Last updated: 2026-03-23 — Phase 07 complete — mise wrapper ships in devShell, intercepts `mise use`, 22 flake checks passing*

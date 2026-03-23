@@ -122,8 +122,11 @@ Plans:
   2. `mise run`, `mise list`, `mise exec`, and all non-`use` subcommands invoke the real `mise` binary with arguments passed through verbatim and no observable overhead
   3. `mise use "pipx:black"` (or any known-backend tool) writes `pipx:black = "latest"` to `mise.toml` and prints a message explaining that tool resolution is Nix-managed and instructing the user to reload (e.g. `direnv reload` or `nix develop`)
   4. Wrapper output clearly attributes the message to mise2nix so the user understands Nix is managing the resolution
-**Plans**: TBD
-**UI hint**: yes
+**Plans**: 2 plans
+
+Plans:
+- [x] 07-01-PLAN.md — Add miseWrapper writeShellScriptBin to lib/default.nix replacing pkgs.mise
+- [ ] 07-02-PLAN.md — Add nix flake check derivations for all wrapper behaviors
 
 ### Phase 8: Interactive Override Patching
 **Goal**: `mise use "unknown-backend:tool"` (or any unmapped tool) prompts the user interactively for a nixpkgs attribute and patches the `overrides = { ... }` argument in the nearest `flake.nix`.
@@ -149,5 +152,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 4. Env Vars + Full devShell Assembly | v0.1.0 | 1/2 | In Progress | - |
 | 5. Tests, Documentation, and Publish | v0.1.0 | 0/3 | Not started | - |
 | 6. Backend Syntax Detection + Mapping Tables | v0.2.0 | 1/2 | In Progress|  |
-| 7. Mise Wrapper Core | v0.2.0 | 0/TBD | Not started | - |
+| 7. Mise Wrapper Core | v0.2.0 | 1/2 | Complete    | 2026-03-23 |
 | 8. Interactive Override Patching | v0.2.0 | 0/TBD | Not started | - |

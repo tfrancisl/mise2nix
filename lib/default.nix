@@ -4,6 +4,7 @@
     let
       runtimes  = import ./runtimes.nix  { inherit lib pkgs; };
       utilities = import ./utilities.nix { inherit lib pkgs; };
+      envMod    = import ./env.nix       { inherit lib pkgs; };
       config    = builtins.fromTOML (builtins.readFile path);
       tools     = config.tools or {};
       env       = config.env   or {};
@@ -23,8 +24,9 @@
             "mise2nix: unknown tool '${name}' — not found in runtimes or utilities. Use 'overrides = { ${name} = pkgs.something; }' or 'extraPackages = [ pkgs.something ]' to provide it.";
 
       resolvedPackages = builtins.attrValues (builtins.mapAttrs resolve tools);
+      envVars = envMod.mkEnvVars env;
     in
-      pkgs.mkShell {
+      pkgs.mkShell (envVars // {
         packages = resolvedPackages ++ extraPackages;
-      };
+      });
 }

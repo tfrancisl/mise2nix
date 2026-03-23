@@ -10,7 +10,7 @@ Build mise2nix — a pure Nix flake library that reads `mise.toml` and produces 
 - Integer phases (1, 2, 3): Planned milestone work
 
 - [x] **Phase 1: Flake Scaffold + Parser** - Initialize flake.nix and fromMiseToml skeleton that returns an empty devShell
-- [ ] **Phase 2: Runtime Tool Resolution** - Map major runtimes to version-specific nixpkgs attributes
+- [x] **Phase 2: Runtime Tool Resolution** - Map major runtimes to version-specific nixpkgs attributes
 - [ ] **Phase 3: Utility Tool Resolution + Overrides API** - Map utilities and expose extraPackages/overrides
 - [ ] **Phase 4: Env Vars + Full devShell Assembly** - Read [env] section and wire full devShell integration
 - [ ] **Phase 5: Tests, Documentation, and Publish** - nix flake check, README, example flake, git tag
@@ -43,11 +43,11 @@ Plans:
   3. Version string parsing correctly extracts major (and minor where needed): "22" → 22, "3.11.9" → 311
   4. `"latest"` version string falls through to utility resolution without error
   5. Resolved runtime packages appear in devShell `buildInputs`
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 02-01: Write lib/runtimes.nix with tool→nixpkgs attr mapping and version parser
-- [ ] 02-02: Integrate runtime resolution into fromMiseToml
+- [x] 02-01-PLAN.md — Create lib/runtimes.nix with all 13 runtime resolvers and wire into fromMiseToml
+- [ ] 02-02-PLAN.md — Add check derivations and verify full Phase 2 integration
 
 ### Phase 3: Utility Tool Resolution + Overrides API
 **Goal**: All `[tools]` entries resolve — either via utility mapping, user overrides, or a descriptive error message.
@@ -104,7 +104,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Flake Scaffold + Parser | 2/2 | Complete | 2026-03-23 |
-| 2. Runtime Tool Resolution | 0/2 | Not started | - |
+| 2. Runtime Tool Resolution | 1/2 | In Progress|  |
 | 3. Utility Tool Resolution + Overrides API | 0/3 | Not started | - |
 | 4. Env Vars + Full devShell Assembly | 0/2 | Not started | - |
 | 5. Tests, Documentation, and Publish | 0/3 | Not started | - |

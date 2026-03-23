@@ -20,10 +20,10 @@ zero manual Nix required for common toolsets.
 
 - [x] Library reads `mise.toml` with `builtins.fromTOML` — *Validated in Phase 01: flake-scaffold-parser*
 - [x] Produces `devShells.${system}.default` via `forAllSystems` — *Validated in Phase 01: flake-scaffold-parser*
+- [x] Major runtimes (node, python, go, ruby, etc.) resolved to version-specific nixpkgs attrs — *Validated in Phase 02: runtime-tool-resolution*
 
 ### Active
 
-- [ ] Major runtimes (node, python, go, ruby, etc.) resolved to version-specific nixpkgs attrs
 - [ ] Utilities and `"latest"` tools resolved to `pkgs.X` (latest-at-nixpkgs-pin, fully cached)
 - [ ] Unknown tools accepted via `extraPackages` or `overrides` argument
 - [ ] `[env]` section mapped to `mkShell` env vars
@@ -93,4 +93,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-23 — Phase 01: flake-scaffold-parser complete*
+*Last updated: 2026-03-23 — Phase 02: runtime-tool-resolution complete*

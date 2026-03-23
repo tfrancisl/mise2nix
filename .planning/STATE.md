@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v0.1.0
 milestone_name: milestone
-status: unknown
-stopped_at: Completed 01-flake-scaffold-parser/01-02-PLAN.md
-last_updated: "2026-03-23T01:51:13.595Z"
+status: Ready to plan
+stopped_at: Completed 02-runtime-tool-resolution/02-02-PLAN.md
+last_updated: "2026-03-23T02:26:56.042Z"
 progress:
   total_phases: 5
-  completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  completed_phases: 2
+  total_plans: 4
+  completed_plans: 4
 ---
 
 # Project State: mise2nix
@@ -23,16 +23,16 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 
 ## Current Phase
 
-**Phase 1: Flake Scaffold + Parser** — COMPLETE (2/2 plans done).
+**Phase 2: Runtime Tool Resolution** — IN PROGRESS (1/1 plans done).
 
-**Next action:** Begin Phase 2 (runtime tool resolution)
+**Next action:** Begin Phase 3 (utility tool resolution + overrides API)
 
 ## Phase Status
 
 | Phase | Name | Status |
 |-------|------|--------|
 | 1 | Flake Scaffold + Parser | Complete (2/2 plans done) |
-| 2 | Runtime Tool Resolution | Pending |
+| 2 | Runtime Tool Resolution | Complete (1/1 plans done) |
 | 3 | Utility Tool Resolution + Overrides API | Pending |
 | 4 | Env Vars + Full devShell Assembly | Pending |
 | 5 | Tests, Documentation, and Publish | Pending |
@@ -42,6 +42,10 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 - lib output is NOT wrapped in forAllSystems — fromMiseToml takes pkgs as argument for system-specificity (matches uv2nix pattern)
 - forAllSystems uses explicit 4-system list via nixpkgs.lib.genAttrs — no flake-utils dependency
 - Phase 1 fromMiseToml returns pkgs.mkShell { packages = []; } — tool resolution deferred to Phase 2
+- builtins.toString applied in lib/default.nix at call site (consistent for future Phase 3 utility tier)
+- Single-version runtimes (rust, deno, bun, terraform, kubectl) silently map all version strings
+- Resolver aliases (nodejs, golang) use shared let-bound functions to avoid rec attrset self-reference
+- [Phase 02-runtime-tool-resolution]: builtins.toFile used for inline latest TOML fixture to avoid adding mise-latest.toml to repo
 
 ## Performance Metrics
 
@@ -49,6 +53,8 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 |-------|------|----------|-------|-------|
 | 01-flake-scaffold-parser | 01 | 2min | 2 | 4 |
 | 01-flake-scaffold-parser | 02 | 5min | 2 | 1 |
+| 02-runtime-tool-resolution | 01 | 2min | 2 | 2 |
+| Phase 02-runtime-tool-resolution P02 | 3min | 2 tasks | 1 files |
 
 ## Notes
 
@@ -62,8 +68,8 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 
 ## Last Session
 
-**Stopped at:** Completed 01-flake-scaffold-parser/01-02-PLAN.md
-**Timestamp:** 2026-03-23T02:00:00Z
+**Stopped at:** Completed 02-runtime-tool-resolution/02-02-PLAN.md
+**Timestamp:** 2026-03-23T02:20:00Z
 
 ---
 *Initialized: 2026-03-22*

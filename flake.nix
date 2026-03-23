@@ -40,6 +40,27 @@
               echo "devShell derivation: ${devShell}"
               echo "PASS: devShell evaluated successfully" > $out
             '';
+
+          runtime-resolution =
+            let devShell = self.lib.fromMiseToml ./mise.toml { inherit pkgs; };
+            in pkgs.runCommand "runtime-resolution" {} ''
+              echo "devShell with runtimes: ${devShell}"
+              echo "PASS: runtime resolution succeeded" > $out
+            '';
+
+          resolve-latest =
+            let
+              latestToml = builtins.toFile "mise-latest.toml" ''
+                [tools]
+                node = "latest"
+                python = "latest"
+                go = "latest"
+              '';
+              devShell = self.lib.fromMiseToml latestToml { inherit pkgs; };
+            in pkgs.runCommand "resolve-latest" {} ''
+              echo "devShell with latest: ${devShell}"
+              echo "PASS: latest resolution succeeded" > $out
+            '';
         }
       );
     };

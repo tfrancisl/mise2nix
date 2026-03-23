@@ -9,7 +9,7 @@ Build mise2nix — a pure Nix flake library that reads `mise.toml` and produces 
 **Phase Numbering:**
 - Integer phases (1, 2, 3): Planned milestone work
 
-- [ ] **Phase 1: Flake Scaffold + Parser** - Initialize flake.nix and fromMiseToml skeleton that returns an empty devShell
+- [x] **Phase 1: Flake Scaffold + Parser** - Initialize flake.nix and fromMiseToml skeleton that returns an empty devShell
 - [ ] **Phase 2: Runtime Tool Resolution** - Map major runtimes to version-specific nixpkgs attributes
 - [ ] **Phase 3: Utility Tool Resolution + Overrides API** - Map utilities and expose extraPackages/overrides
 - [ ] **Phase 4: Env Vars + Full devShell Assembly** - Read [env] section and wire full devShell integration
@@ -27,11 +27,11 @@ Build mise2nix — a pure Nix flake library that reads `mise.toml` and produces 
   3. `fromMiseToml` parses `mise.toml` using `builtins.fromTOML` without error
   4. `nix flake show` succeeds and shows `devShells` output
   5. `nix develop` opens a shell (even if empty)
-**Plans**: TBD
+**Plans**: 2 plans (2/2 complete)
 
 Plans:
-- [ ] 01-01: Write flake.nix with nixpkgs input and forAllSystems helper
-- [ ] 01-02: Write lib/default.nix with fromMiseToml function and mise.toml parser
+- [x] 01-01-PLAN.md — Create flake.nix, lib/default.nix, and mise.toml skeleton
+- [x] 01-02-PLAN.md — Add checks output and verify full Phase 1 integration
 
 ### Phase 2: Runtime Tool Resolution
 **Goal**: Major language runtimes in `[tools]` resolve to the correct version-specific nixpkgs attribute (e.g. `node = "22"` → `pkgs.nodejs_22`).
@@ -103,7 +103,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Flake Scaffold + Parser | 0/2 | Not started | - |
+| 1. Flake Scaffold + Parser | 2/2 | Complete | 2026-03-23 |
 | 2. Runtime Tool Resolution | 0/2 | Not started | - |
 | 3. Utility Tool Resolution + Overrides API | 0/3 | Not started | - |
 | 4. Env Vars + Full devShell Assembly | 0/2 | Not started | - |

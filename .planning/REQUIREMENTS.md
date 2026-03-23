@@ -7,16 +7,16 @@
 
 ### Core (parsing + resolution)
 
-- [ ] **CORE-01**: Library reads `mise.toml` using `builtins.fromTOML (builtins.readFile path)`
+- [x] **CORE-01**: Library reads `mise.toml` using `builtins.fromTOML (builtins.readFile path)` *(Phase 1 Plan 01)*
 - [ ] **CORE-02**: Major runtimes resolved to version-specific nixpkgs attrs (e.g. `node = "22"` → `pkgs.nodejs_22`, `python = "3.11"` → `pkgs.python311`)
 - [ ] **CORE-03**: Utilities and `"latest"` version strings resolved to `pkgs.X` (latest at nixpkgs pin)
 - [ ] **CORE-04**: Unknown tools accepted via `extraPackages` (list of packages) or `overrides` (attrset replacing a mapped tool) argument
 
 ### Shell (devShell output)
 
-- [ ] **SHELL-01**: Produces `devShells.${system}.default` accessible via a simple `forAllSystems` exposed directly in the flake (no flake-utils)
+- [x] **SHELL-01**: Produces `devShells.${system}.default` accessible via a simple `forAllSystems` exposed directly in the flake (no flake-utils) *(Phase 1 Plan 01)*
 - [ ] **SHELL-02**: `[env]` section from `mise.toml` mapped to `mkShell` env vars
-- [ ] **SHELL-03**: Uses `pkgs.mkShell` exclusively — no devenv, no home-manager
+- [x] **SHELL-03**: Uses `pkgs.mkShell` exclusively — no devenv, no home-manager *(Phase 1 Plan 01)*
 
 ### DX (developer experience)
 
@@ -56,9 +56,9 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CORE-01 | Phase 1 | Pending |
-| SHELL-01 | Phase 1 | Pending |
-| SHELL-03 | Phase 1 | Pending |
+| CORE-01 | Phase 1 | Complete (01-01, 01-02) |
+| SHELL-01 | Phase 1 | Complete (01-01, 01-02) |
+| SHELL-03 | Phase 1 | Complete (01-01, 01-02) |
 | CORE-02 | Phase 2 | Pending |
 | CORE-03 | Phase 2 | Pending |
 | CORE-04 | Phase 3 | Pending |

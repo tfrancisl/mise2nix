@@ -153,6 +153,22 @@
               echo "PASS: env vars flow through to mkShell" > $out
             '';
 
+          integer-env-var =
+            let
+              toml = builtins.toFile "int-env-test.toml" ''
+                [env]
+                PORT = 8080
+              '';
+              # builtins.fromTOML parses 8080 as a Nix integer; env.nix must coerce via builtins.toString
+              devShell = self.lib.fromMiseToml toml { inherit pkgs; };
+            in pkgs.runCommand "integer-env-var" {} ''
+              if [ "${devShell.PORT}" != "8080" ]; then
+                echo "FAIL: PORT expected '8080', got '${devShell.PORT}'"
+                exit 1
+              fi
+              echo "PASS: integer env var coerced to string" > $out
+            '';
+
           full-integration =
             let devShell = self.lib.fromMiseToml ./mise.toml { inherit pkgs; };
             in pkgs.runCommand "full-integration" {} ''

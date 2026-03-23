@@ -26,7 +26,11 @@
       resolvedPackages = builtins.attrValues (builtins.mapAttrs resolve tools);
       envVars = envMod.mkEnvVars env;
     in
-      pkgs.mkShell (envVars // {
+      pkgs.mkShell ({
+        # Prevent mise from trying to download/install tools that Nix already provides.
+        # Analogous to UV_NO_DOWNLOAD in uv2nix. User [env] entries can override this.
+        MISE_NOT_FOUND_AUTO_INSTALL = "false";
+      } // envVars // {
         packages = [ pkgs.mise ] ++ resolvedPackages ++ extraPackages;
       });
 }

@@ -61,6 +61,60 @@
               echo "devShell with latest: ${devShell}"
               echo "PASS: latest resolution succeeded" > $out
             '';
+
+          resolve-utilities =
+            let devShell = self.lib.fromMiseToml ./mise.toml { inherit pkgs; };
+            in pkgs.runCommand "resolve-utilities" {} ''
+              echo "devShell with utilities: ${devShell}"
+              echo "PASS: utility resolution succeeded" > $out
+            '';
+
+          extra-packages =
+            let
+              toml = builtins.toFile "extra-test.toml" ''
+                [tools]
+                node = "22"
+              '';
+              devShell = self.lib.fromMiseToml toml {
+                inherit pkgs;
+                extraPackages = [ pkgs.hello ];
+              };
+            in pkgs.runCommand "extra-packages" {} ''
+              echo "devShell with extraPackages: ${devShell}"
+              echo "PASS: extraPackages accepted" > $out
+            '';
+
+          overrides-work =
+            let
+              toml = builtins.toFile "override-test.toml" ''
+                [tools]
+                node = "22"
+              '';
+              devShell = self.lib.fromMiseToml toml {
+                inherit pkgs;
+                overrides = { node = pkgs.nodejs_20; };
+              };
+            in pkgs.runCommand "overrides-work" {} ''
+              echo "devShell with override: ${devShell}"
+              echo "PASS: overrides accepted" > $out
+            '';
+
+          unknown-tool-error =
+            let
+              toml = builtins.toFile "unknown-test.toml" ''
+                [tools]
+                nonexistent_tool_xyz = "latest"
+              '';
+              # fromMiseToml returns a lazy mkShell; force nativeBuildInputs to trigger the throw
+              devShell = self.lib.fromMiseToml toml { inherit pkgs; };
+              result = builtins.tryEval (builtins.deepSeq devShell.nativeBuildInputs devShell);
+            in pkgs.runCommand "unknown-tool-error" {} ''
+              ${if result.success then
+                ''echo "FAIL: should have thrown for unknown tool" && exit 1''
+              else
+                ''echo "PASS: unknown tool correctly throws error" > $out''
+              }
+            '';
         }
       );
     };

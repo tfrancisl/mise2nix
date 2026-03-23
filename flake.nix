@@ -115,6 +115,37 @@
                 ''echo "PASS: unknown tool correctly throws error" > $out''
               }
             '';
+
+          env-var-passthrough =
+            let
+              toml = builtins.toFile "env-test.toml" ''
+                [env]
+                NODE_ENV = "production"
+                PORT = "8080"
+              '';
+              devShell = self.lib.fromMiseToml toml { inherit pkgs; };
+            in pkgs.runCommand "env-var-passthrough" {} ''
+              if [ "${devShell.NODE_ENV}" != "production" ]; then
+                echo "FAIL: NODE_ENV expected 'production', got '${devShell.NODE_ENV}'"
+                exit 1
+              fi
+              if [ "${devShell.PORT}" != "8080" ]; then
+                echo "FAIL: PORT expected '8080', got '${devShell.PORT}'"
+                exit 1
+              fi
+              echo "PASS: env vars flow through to mkShell" > $out
+            '';
+
+          full-integration =
+            let devShell = self.lib.fromMiseToml ./mise.toml { inherit pkgs; };
+            in pkgs.runCommand "full-integration" {} ''
+              echo "devShell: ${devShell}"
+              if [ "${devShell.NODE_ENV}" != "development" ]; then
+                echo "FAIL: NODE_ENV expected 'development', got '${devShell.NODE_ENV}'"
+                exit 1
+              fi
+              echo "PASS: full integration (tools + env) verified" > $out
+            '';
         }
       );
     };

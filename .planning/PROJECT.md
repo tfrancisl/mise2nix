@@ -43,12 +43,15 @@ zero manual Nix required for common toolsets.
 
 ### Active
 
-- [ ] `mise use "pipx:tool"` resolves tool via `pkgs.python3Packages.*` — *v0.2.0*
-- [ ] `mise use "npm:tool"` resolves tool via `pkgs.nodePackages.*` — *v0.2.0*
-- [ ] `mise use "cargo:tool"` resolves tool via `pkgs.*` — *v0.2.0*
 - [ ] Unknown backend prompts user for nixpkgs attribute and writes override to flake.nix — *v0.2.0*
-- [ ] `fromMiseToml` parses `backend:tool` syntax in `[tools]` section — *v0.2.0*
 - [ ] `mise` wrapper replaces bare `pkgs.mise` in devShell — *v0.2.0*
+
+### Validated (v0.2.0)
+
+- [x] `fromMiseToml` parses `backend:tool` syntax in `[tools]` section — *Validated in Phase 06: backend-syntax-detection-mapping-tables*
+- [x] `mise use "pipx:tool"` resolves tool via `pkgs.python3Packages.*` — *Validated in Phase 06: backend-syntax-detection-mapping-tables*
+- [x] `mise use "npm:tool"` resolves tool via `pkgs.nodePackages.*` — *Validated in Phase 06: backend-syntax-detection-mapping-tables*
+- [x] `mise use "cargo:tool"` resolves tool via `pkgs.*` — *Validated in Phase 06: backend-syntax-detection-mapping-tables*
 
 ### Out of Scope
 
@@ -111,4 +114,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-23 — Milestone v0.2.0 started — Backend Tool Resolution*
+*Last updated: 2026-03-23 — Phase 06 complete — backend detection + pipx/npm/cargo mapping tables implemented and verified*

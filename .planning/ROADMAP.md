@@ -107,7 +107,11 @@ Plans:
   3. `npm:prettier`, `npm:typescript`, `npm:eslint` (and ≤9 other common tools) resolve to the correct `pkgs.nodePackages.*` attribute
   4. `cargo:ripgrep`, `cargo:bat`, `cargo:fd` (and ≤9 other common tools) resolve to the correct `pkgs.*` attribute
   5. An unknown backend or an unmapped tool within a known backend throws a `builtins.throw` error naming the tool and explaining the `overrides`/`extraPackages` escape hatches
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [x] 06-01-PLAN.md — Create backend mapping tables (pipx, npm, cargo) and extend lib/default.nix with backend detection
+- [ ] 06-02-PLAN.md — Add nix flake check derivations for all backend resolution paths
 
 ### Phase 7: Mise Wrapper Core
 **Goal**: The devShell ships a `mise` wrapper script that handles `mise use "known-backend:tool"` gracefully and passes all other subcommands through to the real mise binary unchanged.
@@ -144,6 +148,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 3. Utility Tool Resolution + Overrides API | v0.1.0 | 2/3 | In Progress | - |
 | 4. Env Vars + Full devShell Assembly | v0.1.0 | 1/2 | In Progress | - |
 | 5. Tests, Documentation, and Publish | v0.1.0 | 0/3 | Not started | - |
-| 6. Backend Syntax Detection + Mapping Tables | v0.2.0 | 0/TBD | Not started | - |
+| 6. Backend Syntax Detection + Mapping Tables | v0.2.0 | 1/2 | In Progress|  |
 | 7. Mise Wrapper Core | v0.2.0 | 0/TBD | Not started | - |
 | 8. Interactive Override Patching | v0.2.0 | 0/TBD | Not started | - |

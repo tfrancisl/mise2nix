@@ -29,11 +29,11 @@
 
 ### Backend Resolution
 
-- [ ] **BACKEND-01**: `fromMiseToml` detects `backend:tool` syntax in `[tools]` entries and routes to the appropriate backend resolver
-- [ ] **BACKEND-02**: `pipx:tool` entries resolve to `pkgs.python3Packages.*` via a mapping table covering ≤12 common tools (e.g. black, mypy, mdformat, ruff, isort, pylint, flake8, pyupgrade, bandit, pip-tools, poetry, twine)
-- [ ] **BACKEND-03**: `npm:tool` entries resolve to `pkgs.nodePackages.*` via a mapping table covering ≤12 common tools (e.g. prettier, typescript, eslint, webpack, vite, ts-node, esbuild, rollup, svelte, vue, turbo, nx)
-- [ ] **BACKEND-04**: `cargo:tool` entries resolve to `pkgs.*` via a mapping table covering ≤12 common tools (e.g. ripgrep, bat, fd, eza, delta, zoxide, tokei, hyperfine, just, cargo-watch, cargo-nextest, watchexec)
-- [ ] **BACKEND-05**: Unknown backend in `[tools]` (e.g. `ubi:`, `gh:`, unmapped `pipx:`/`npm:`/`cargo:` tool) throws a descriptive error naming the tool and explaining the `overrides`/`extraPackages` escape hatches
+- [x] **BACKEND-01**: `fromMiseToml` detects `backend:tool` syntax in `[tools]` entries and routes to the appropriate backend resolver
+- [x] **BACKEND-02**: `pipx:tool` entries resolve to `pkgs.python3Packages.*` via a mapping table covering ≤12 common tools (e.g. black, mypy, mdformat, ruff, isort, pylint, flake8, pyupgrade, bandit, pip-tools, poetry, twine)
+- [x] **BACKEND-03**: `npm:tool` entries resolve to `pkgs.nodePackages.*` via a mapping table covering ≤12 common tools (e.g. prettier, typescript, eslint, webpack, vite, ts-node, esbuild, rollup, svelte, vue, turbo, nx)
+- [x] **BACKEND-04**: `cargo:tool` entries resolve to `pkgs.*` via a mapping table covering ≤12 common tools (e.g. ripgrep, bat, fd, eza, delta, zoxide, tokei, hyperfine, just, cargo-watch, cargo-nextest, watchexec)
+- [x] **BACKEND-05**: Unknown backend in `[tools]` (e.g. `ubi:`, `gh:`, unmapped `pipx:`/`npm:`/`cargo:` tool) throws a descriptive error naming the tool and explaining the `overrides`/`extraPackages` escape hatches
 
 ### Wrapper
 
@@ -95,11 +95,11 @@
 | DX-02 | Phase 5 | Complete |
 | DX-03 | Phase 5 | Complete |
 | DX-04 | Phase 5 | Complete |
-| BACKEND-01 | Phase 6 | Pending |
-| BACKEND-02 | Phase 6 | Pending |
-| BACKEND-03 | Phase 6 | Pending |
-| BACKEND-04 | Phase 6 | Pending |
-| BACKEND-05 | Phase 6 | Pending |
+| BACKEND-01 | Phase 6 | Complete |
+| BACKEND-02 | Phase 6 | Complete |
+| BACKEND-03 | Phase 6 | Complete |
+| BACKEND-04 | Phase 6 | Complete |
+| BACKEND-05 | Phase 6 | Complete |
 | WRAP-01 | Phase 7 | Pending |
 | WRAP-02 | Phase 7 | Pending |
 | DX-05 | Phase 7 | Pending |

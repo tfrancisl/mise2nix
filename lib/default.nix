@@ -27,6 +27,6 @@
       envVars = envMod.mkEnvVars env;
     in
       pkgs.mkShell (envVars // {
-        packages = resolvedPackages ++ extraPackages;
+        packages = [ pkgs.mise ] ++ resolvedPackages ++ extraPackages;
       });
 }

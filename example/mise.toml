@@ -1,0 +1,8 @@
+[tools]
+node = "22"
+python = "3.11"
+ripgrep = "latest"
+fd = "latest"
+
+[env]
+NODE_ENV = "development"

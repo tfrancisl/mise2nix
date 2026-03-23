@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v0.1.0
 milestone_name: Foundation
 status: completed
-stopped_at: Completed 07-mise-wrapper-core/07-02-PLAN.md — 4 wrapper checks passing, 22 total flake checks green
-last_updated: "2026-03-23T23:31:31.698Z"
-last_activity: 2026-03-23
+stopped_at: Completed 08-interactive-override-patching/08-02-PLAN.md — 4 WRAP-03 checks added, 26 total flake checks green, phase 8 complete
+last_updated: "2026-03-24T00:36:20.092Z"
+last_activity: 2026-03-24
 progress:
   total_phases: 3
-  completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
-  percent: 75
+  completed_phases: 3
+  total_plans: 6
+  completed_plans: 6
+  percent: 100
 ---
 
 # Project State: mise2nix
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-23)
 
 **Core value:** `mise2nix.lib.fromMiseToml ./mise.toml { inherit pkgs; }` produces a working devShell — zero manual Nix required for common toolsets.
-**Current focus:** Phase 07 — mise-wrapper-core
+**Current focus:** Phase 08 — interactive-override-patching
 
 ## Current Phase
 
-Phase: 8 of 8 (interactive override patching)
+Phase: 08 of 8 (interactive override patching)
 Plan: Not started
-Status: Plan 07-02 complete — all 4 wrapper checks passing, phase 7 complete
-Last activity: 2026-03-23
+Status: Plan 08-02 complete — 4 WRAP-03 check derivations added; 26 total nix flake checks green; phase 8 complete
+Last activity: 2026-03-24
 
-Progress: [████████░░] 75% (v0.2.0 phases)
+Progress: [████████████] 100% (v0.2.0 phases)
 
 ## Phase Status
 
@@ -38,7 +38,7 @@ Progress: [████████░░] 75% (v0.2.0 phases)
 |-------|------|--------|
 | 6. Backend Syntax Detection + Mapping Tables | `fromMiseToml` detects backend:tool syntax; pipx/npm/cargo tables resolve; unknowns throw | Complete |
 | 7. Mise Wrapper Core | Wrapper intercepts `mise use known-backend:tool`; all other subcommands pass through | Complete |
-| 8. Interactive Override Patching | `mise use unknown-backend:tool` prompts for nixpkgs attr and patches flake.nix | Not started |
+| 8. Interactive Override Patching | `mise use unknown-backend:tool` prompts for nixpkgs attr and patches flake.nix | Complete |
 
 ## Decisions (Accumulated from v0.1.0)
 
@@ -57,6 +57,10 @@ Progress: [████████░░] 75% (v0.2.0 phases)
 - Use builtins.seq devShell.drvPath null (not deepSeq nativeBuildInputs) to force mkShell eval in tryEval error checks — avoids stack overflow
 - Duplicate miseWrapper inline in flake.nix check let blocks — miseWrapper is local to fromMiseToml closure and cannot be accessed from flake.nix checks (RESEARCH.md pitfall 2)
 - cp toFile fixture + chmod +w before sed-based in-place mutation in runCommand checks — builtins.toFile produces read-only Nix store files
+- Known-tool lists derived from builtins.attrNames on backend attrsets at Nix eval time — interpolated into bash, zero drift with tables (phase 8 plan 01, D-02)
+- Interactive prompt reads from /dev/tty (not stdin); empty input or Ctrl-C aborts with no file modifications (phase 8 plan 01, D-06)
+- flake.nix patching: pure shell/sed; missing overrides block prints hint rather than fragile injection (phase 8 plan 01, D-08)
+- Walk up from PWD to filesystem root to find flake.nix; skip patching with warning if not found (phase 8 plan 01, D-09)
 
 ## Notes
 
@@ -67,6 +71,6 @@ Progress: [████████░░] 75% (v0.2.0 phases)
 
 ## Session Continuity
 
-Last session: 2026-03-23
-Stopped at: Completed 07-mise-wrapper-core/07-02-PLAN.md — 4 wrapper checks passing, 22 total flake checks green
+Last session: 2026-03-24
+Stopped at: Completed 08-interactive-override-patching/08-02-PLAN.md — 4 WRAP-03 checks added, 26 total flake checks green, phase 8 complete
 Resume file: None

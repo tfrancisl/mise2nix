@@ -39,7 +39,7 @@
 
 - [x] **WRAP-01**: The devShell includes a `mise` wrapper script (`writeShellScriptBin`) that intercepts `mise use` and passes all other subcommands to the real mise binary unchanged
 - [x] **WRAP-02**: `mise use "known-backend:tool"` writes the entry to `mise.toml` and prints a clear message instructing the user to reload the devShell to apply the change
-- [ ] **WRAP-03**: `mise use "unknown-backend:tool"` or `mise use "backend:unmapped-tool"` prompts interactively for a nixpkgs attribute and patches the `overrides = { ... }` argument in the nearest `flake.nix`
+- [x] **WRAP-03**: `mise use "unknown-backend:tool"` or `mise use "backend:unmapped-tool"` prompts interactively for a nixpkgs attribute and patches the `overrides = { ... }` argument in the nearest `flake.nix`
 
 ### DX (v0.2.0)
 
@@ -104,7 +104,7 @@
 | WRAP-02 | Phase 7 | Complete |
 | DX-05 | Phase 7 | Complete |
 | DX-06 | Phase 7 | Complete |
-| WRAP-03 | Phase 8 | Pending |
+| WRAP-03 | Phase 8 | Complete |
 
 ---
 *Requirements defined: 2026-03-22*

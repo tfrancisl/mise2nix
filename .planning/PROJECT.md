@@ -43,7 +43,7 @@ zero manual Nix required for common toolsets.
 
 ### Active
 
-- [ ] Unknown backend prompts user for nixpkgs attribute and writes override to flake.nix — *v0.2.0*
+*(none — v0.2.0 complete)*
 
 ### Validated (v0.2.0)
 
@@ -54,6 +54,7 @@ zero manual Nix required for common toolsets.
 - [x] `mise` wrapper replaces bare `pkgs.mise` in devShell — *Validated in Phase 07: mise-wrapper-core*
 - [x] `mise use backend:tool` writes entry to `mise.toml` and prints Nix-managed reload message — *Validated in Phase 07: mise-wrapper-core*
 - [x] All non-`use` subcommands pass through to real mise binary unchanged — *Validated in Phase 07: mise-wrapper-core*
+- [x] Unknown backend prompts user for nixpkgs attribute and writes override to flake.nix — *Validated in Phase 08: interactive-override-patching*
 
 ### Out of Scope
 
@@ -116,4 +117,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-23 — Phase 07 complete — mise wrapper ships in devShell, intercepts `mise use`, 22 flake checks passing*
+*Last updated: 2026-03-24 — Phase 08 complete — interactive override patching ships, 26 flake checks passing, v0.2.0 milestone complete*

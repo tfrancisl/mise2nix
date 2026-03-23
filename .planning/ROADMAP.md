@@ -137,7 +137,11 @@ Plans:
   2. After the user supplies an attribute, the tool entry is written to `mise.toml` and the `overrides` attrset in the nearest `flake.nix` is patched with the new mapping
   3. The patched `flake.nix` remains syntactically valid Nix after the write
   4. If the user aborts the prompt (Ctrl-C or empty input), no files are modified and a clear cancellation message is shown
-**Plans**: TBD
+**Plans**: 2 plans (2/2 complete)
+
+Plans:
+- [x] 08-01-PLAN.md — Extend miseWrapper with interactive prompt, known-tool detection, and flake.nix patching
+- [x] 08-02-PLAN.md — Add nix flake check derivations for unknown-tool detection and abort paths
 
 ## Progress
 
@@ -153,4 +157,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 5. Tests, Documentation, and Publish | v0.1.0 | 0/3 | Not started | - |
 | 6. Backend Syntax Detection + Mapping Tables | v0.2.0 | 1/2 | In Progress|  |
 | 7. Mise Wrapper Core | v0.2.0 | 1/2 | Complete    | 2026-03-23 |
-| 8. Interactive Override Patching | v0.2.0 | 0/TBD | Not started | - |
+| 8. Interactive Override Patching | v0.2.0 | 2/2 | Complete    | 2026-03-24 |

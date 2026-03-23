@@ -21,5 +21,26 @@
           default = self.lib.fromMiseToml ./mise.toml { inherit pkgs; };
         }
       );
+
+      checks = forAllSystems (system:
+        let pkgs = nixpkgs.legacyPackages.${system};
+        in {
+          parse-toml = pkgs.runCommand "parse-toml" {} ''
+            node_val='${(builtins.fromTOML (builtins.readFile ./mise.toml)).tools.node}'
+            if [ "$node_val" != "22" ]; then
+              echo "FAIL: expected tools.node = 22, got $node_val"
+              exit 1
+            fi
+            echo "PASS: TOML parse verified (tools.node = $node_val)" > $out
+          '';
+
+          devshell-builds =
+            let devShell = self.lib.fromMiseToml ./mise.toml { inherit pkgs; };
+            in pkgs.runCommand "devshell-builds" {} ''
+              echo "devShell derivation: ${devShell}"
+              echo "PASS: devShell evaluated successfully" > $out
+            '';
+        }
+      );
     };
 }

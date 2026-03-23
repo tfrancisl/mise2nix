@@ -10,7 +10,7 @@
 - [x] **CORE-01**: Library reads `mise.toml` using `builtins.fromTOML (builtins.readFile path)` *(Phase 1 Plan 01)*
 - [x] **CORE-02**: Major runtimes resolved to version-specific nixpkgs attrs (e.g. `node = "22"` → `pkgs.nodejs_22`, `python = "3.11"` → `pkgs.python311`) *(Phase 2 Plan 01)*
 - [x] **CORE-03**: Utilities and `"latest"` version strings resolved to `pkgs.X` (latest at nixpkgs pin) *(Phase 2 Plan 01)*
-- [ ] **CORE-04**: Unknown tools accepted via `extraPackages` (list of packages) or `overrides` (attrset replacing a mapped tool) argument
+- [x] **CORE-04**: Unknown tools accepted via `extraPackages` (list of packages) or `overrides` (attrset replacing a mapped tool) argument
 
 ### Shell (devShell output)
 
@@ -20,7 +20,7 @@
 
 ### DX (developer experience)
 
-- [ ] **DX-01**: Unknown tool with no override throws a helpful Nix eval error that names the unknown tool(s) and explains how to use `overrides` or `extraPackages`
+- [x] **DX-01**: Unknown tool with no override throws a helpful Nix eval error that names the unknown tool(s) and explains how to use `overrides` or `extraPackages`
 - [ ] **DX-02**: README documents: what it is, installation, usage, supported tool table, overrides API
 - [ ] **DX-03**: Example flake (`example/`) showing a realistic mise.toml → devShell workflow
 - [ ] **DX-04**: Flake outputs interface is stable and versioned (README documents the API contract)
@@ -61,8 +61,8 @@
 | SHELL-03 | Phase 1 | Complete (01-01, 01-02) |
 | CORE-02 | Phase 2 | Complete (02-01) |
 | CORE-03 | Phase 2 | Complete (02-01) |
-| CORE-04 | Phase 3 | Pending |
-| DX-01 | Phase 3 | Pending |
+| CORE-04 | Phase 3 | Complete |
+| DX-01 | Phase 3 | Complete |
 | SHELL-02 | Phase 4 | Pending |
 | DX-02 | Phase 5 | Pending |
 | DX-03 | Phase 5 | Pending |

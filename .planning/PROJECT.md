@@ -21,13 +21,13 @@ zero manual Nix required for common toolsets.
 - [x] Library reads `mise.toml` with `builtins.fromTOML` — *Validated in Phase 01: flake-scaffold-parser*
 - [x] Produces `devShells.${system}.default` via `forAllSystems` — *Validated in Phase 01: flake-scaffold-parser*
 - [x] Major runtimes (node, python, go, ruby, etc.) resolved to version-specific nixpkgs attrs — *Validated in Phase 02: runtime-tool-resolution*
+- [x] Utilities and `"latest"` tools resolved to `pkgs.X` (latest-at-nixpkgs-pin, fully cached) — *Validated in Phase 03: utility-tool-resolution-overrides-api*
+- [x] Unknown tools accepted via `extraPackages` or `overrides` argument — *Validated in Phase 03: utility-tool-resolution-overrides-api*
+- [x] Unknown tool without override throws a helpful Nix eval error — *Validated in Phase 03: utility-tool-resolution-overrides-api*
 
 ### Active
 
-- [ ] Utilities and `"latest"` tools resolved to `pkgs.X` (latest-at-nixpkgs-pin, fully cached)
-- [ ] Unknown tools accepted via `extraPackages` or `overrides` argument
 - [ ] `[env]` section mapped to `mkShell` env vars
-- [ ] Unknown tool without override throws a helpful Nix eval error
 - [ ] README with usage examples and supported tool table
 - [ ] Example flake demonstrating common mise.toml → devShell patterns
 - [ ] Flake published with a stable outputs interface
@@ -93,4 +93,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-23 — Phase 02: runtime-tool-resolution complete*
+*Last updated: 2026-03-23 — Phase 03: utility-tool-resolution-overrides-api complete*

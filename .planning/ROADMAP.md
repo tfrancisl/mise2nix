@@ -58,12 +58,12 @@ Plans:
   2. `extraPackages` argument appends additional packages to buildInputs
   3. `overrides` argument (attrset keyed by mise tool name) replaces a resolved package
   4. Completely unknown tool with no override throws `builtins.throw` with message naming the tool and explaining extraPackages/overrides
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 03-01: Write lib/utilities.nix with common tool mapping
-- [ ] 03-02: Implement extraPackages and overrides arguments in fromMiseToml
-- [ ] 03-03: Implement unknown tool error with helpful message
+- [x] 03-01-PLAN.md — Create lib/utilities.nix with common tool mapping
+- [x] 03-02-PLAN.md — Wire utilities into fromMiseToml, add extraPackages/overrides args, unknown tool error
+- [ ] 03-03-PLAN.md — Add check derivations for utility resolution, overrides, and error handling
 
 ### Phase 4: Env Vars + Full devShell Assembly
 **Goal**: `[env]` section from `mise.toml` flows into the devShell as environment variables; full end-to-end integration works.
@@ -105,6 +105,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Flake Scaffold + Parser | 2/2 | Complete | 2026-03-23 |
 | 2. Runtime Tool Resolution | 1/2 | In Progress|  |
-| 3. Utility Tool Resolution + Overrides API | 0/3 | Not started | - |
+| 3. Utility Tool Resolution + Overrides API | 2/3 | In Progress|  |
 | 4. Env Vars + Full devShell Assembly | 0/2 | Not started | - |
 | 5. Tests, Documentation, and Publish | 0/3 | Not started | - |

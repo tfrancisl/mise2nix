@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v0.1.0
 milestone_name: milestone
 status: Ready to plan
-stopped_at: Completed 02-runtime-tool-resolution/02-02-PLAN.md
-last_updated: "2026-03-23T02:26:56.042Z"
+stopped_at: Completed 03-utility-tool-resolution-overrides-api/03-03-PLAN.md
+last_updated: "2026-03-23T02:51:04.872Z"
 progress:
   total_phases: 5
-  completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
+  completed_phases: 3
+  total_plans: 7
+  completed_plans: 7
 ---
 
 # Project State: mise2nix
@@ -23,9 +23,9 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 
 ## Current Phase
 
-**Phase 2: Runtime Tool Resolution** — IN PROGRESS (1/1 plans done).
+**Phase 3: Utility Tool Resolution + Overrides API** — IN PROGRESS (1/3 plans done).
 
-**Next action:** Begin Phase 3 (utility tool resolution + overrides API)
+**Next action:** Continue Phase 3 (Plan 02: integrate utilities tier into fromMiseToml + overrides API)
 
 ## Phase Status
 
@@ -33,7 +33,7 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 |-------|------|--------|
 | 1 | Flake Scaffold + Parser | Complete (2/2 plans done) |
 | 2 | Runtime Tool Resolution | Complete (1/1 plans done) |
-| 3 | Utility Tool Resolution + Overrides API | Pending |
+| 3 | Utility Tool Resolution + Overrides API | In Progress (1/3 plans done) |
 | 4 | Env Vars + Full devShell Assembly | Pending |
 | 5 | Tests, Documentation, and Publish | Pending |
 
@@ -46,6 +46,14 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 - Single-version runtimes (rust, deno, bun, terraform, kubectl) silently map all version strings
 - Resolver aliases (nodejs, golang) use shared let-bound functions to avoid rec attrset self-reference
 - [Phase 02-runtime-tool-resolution]: builtins.toFile used for inline latest TOML fixture to avoid adding mise-latest.toml to repo
+- [Phase 03-01]: All utility resolvers take _version (ignored) — nixpkgs pin provides a single version per tool
+- [Phase 03-01]: make maps to pkgs.gnumake (pkgs.make does not exist in nixpkgs)
+- [Phase 03-01]: rg provided as alias for ripgrep so both mise tool names work
+- [Phase 03]: overrides values are derivations directly (not functions) — simpler API matching CORE-04 requirement
+- [Phase 03]: Resolution cascade order: overrides -> runtimes -> utilities -> throw (user overrides always win)
+- [Phase 03]: Error message names the specific tool and explains both escape hatches (DX-01 compliance)
+- [Phase 03-utility-tool-resolution-overrides-api]: unknown-tool-error check uses builtins.deepSeq devShell.nativeBuildInputs to force lazy package evaluation before tryEval
+- [Phase 03-utility-tool-resolution-overrides-api]: builtins.toFile used for inline TOML fixtures in check derivations to avoid adding test files to repo
 
 ## Performance Metrics
 
@@ -55,6 +63,9 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 | 01-flake-scaffold-parser | 02 | 5min | 2 | 1 |
 | 02-runtime-tool-resolution | 01 | 2min | 2 | 2 |
 | Phase 02-runtime-tool-resolution P02 | 3min | 2 tasks | 1 files |
+| 03-utility-tool-resolution-overrides-api | 01 | 1min | 1 | 1 |
+| Phase 03-utility-tool-resolution-overrides-api P02 | 1min | 2 tasks | 2 files |
+| Phase 03-utility-tool-resolution-overrides-api P03 | 3min | 1 tasks | 1 files |
 
 ## Notes
 
@@ -68,8 +79,8 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 
 ## Last Session
 
-**Stopped at:** Completed 02-runtime-tool-resolution/02-02-PLAN.md
-**Timestamp:** 2026-03-23T02:20:00Z
+**Stopped at:** Completed 03-utility-tool-resolution-overrides-api/03-03-PLAN.md
+**Timestamp:** 2026-03-23T02:40:00Z
 
 ---
 *Initialized: 2026-03-22*

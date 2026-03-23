@@ -15,7 +15,7 @@
 ### Shell (devShell output)
 
 - [x] **SHELL-01**: Produces `devShells.${system}.default` accessible via a simple `forAllSystems` exposed directly in the flake (no flake-utils) *(Phase 1 Plan 01)*
-- [ ] **SHELL-02**: `[env]` section from `mise.toml` mapped to `mkShell` env vars
+- [x] **SHELL-02**: `[env]` section from `mise.toml` mapped to `mkShell` env vars
 - [x] **SHELL-03**: Uses `pkgs.mkShell` exclusively — no devenv, no home-manager *(Phase 1 Plan 01)*
 
 ### DX (developer experience)
@@ -63,7 +63,7 @@
 | CORE-03 | Phase 2 | Complete (02-01) |
 | CORE-04 | Phase 3 | Complete |
 | DX-01 | Phase 3 | Complete |
-| SHELL-02 | Phase 4 | Pending |
+| SHELL-02 | Phase 4 | Complete |
 | DX-02 | Phase 5 | Pending |
 | DX-03 | Phase 5 | Pending |
 | DX-04 | Phase 5 | Pending |

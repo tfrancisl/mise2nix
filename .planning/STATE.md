@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v0.1.0
 milestone_name: milestone
 status: Ready to plan
-stopped_at: Completed 03-utility-tool-resolution-overrides-api/03-03-PLAN.md
-last_updated: "2026-03-23T02:51:04.872Z"
+stopped_at: Completed 04-env-vars-full-devshell-assembly/04-02-PLAN.md
+last_updated: "2026-03-23T03:06:16.389Z"
 progress:
   total_phases: 5
-  completed_phases: 3
-  total_plans: 7
-  completed_plans: 7
+  completed_phases: 4
+  total_plans: 9
+  completed_plans: 9
 ---
 
 # Project State: mise2nix
@@ -19,7 +19,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-22)
 
 **Core value:** `mise2nix.lib.fromMiseToml ./mise.toml { inherit pkgs; }` produces a working devShell — zero manual Nix required for common toolsets.
-**Current focus:** Phase 1 complete — both plans done; Phase 2 (runtime tool resolution) is next
+**Current focus:** Phase 04 — env-vars-full-devshell-assembly
 
 ## Current Phase
 
@@ -54,6 +54,10 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 - [Phase 03]: Error message names the specific tool and explains both escape hatches (DX-01 compliance)
 - [Phase 03-utility-tool-resolution-overrides-api]: unknown-tool-error check uses builtins.deepSeq devShell.nativeBuildInputs to force lazy package evaluation before tryEval
 - [Phase 03-utility-tool-resolution-overrides-api]: builtins.toFile used for inline TOML fixtures in check derivations to avoid adding test files to repo
+- [Phase 04-env-vars-full-devshell-assembly]: mkEnvVars is pure data transformation with builtins.mapAttrs + builtins.toString for TOML value coercion
+- [Phase 04-env-vars-full-devshell-assembly]: env vars merged into mkShell via envVars // { packages = ...; } for top-level attribute injection
+- [Phase 04-env-vars-full-devshell-assembly]: env-var-passthrough uses inline TOML with no [tools] section to isolate env var logic
+- [Phase 04-env-vars-full-devshell-assembly]: full-integration reuses project mise.toml — single source of truth for combined tools + env test
 
 ## Performance Metrics
 
@@ -66,6 +70,8 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 | 03-utility-tool-resolution-overrides-api | 01 | 1min | 1 | 1 |
 | Phase 03-utility-tool-resolution-overrides-api P02 | 1min | 2 tasks | 2 files |
 | Phase 03-utility-tool-resolution-overrides-api P03 | 3min | 1 tasks | 1 files |
+| Phase 04-env-vars-full-devshell-assembly P01 | 1min | 2 tasks | 2 files |
+| Phase 04-env-vars-full-devshell-assembly P02 | 1min | 1 tasks | 1 files |
 
 ## Notes
 
@@ -79,7 +85,7 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 
 ## Last Session
 
-**Stopped at:** Completed 03-utility-tool-resolution-overrides-api/03-03-PLAN.md
+**Stopped at:** Completed 04-env-vars-full-devshell-assembly/04-02-PLAN.md
 **Timestamp:** 2026-03-23T02:40:00Z
 
 ---

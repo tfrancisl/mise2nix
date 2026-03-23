@@ -74,11 +74,11 @@ Plans:
   2. `mkShell` receives env vars from `[env]` section (visible in `nix develop` shell)
   3. A `mise.toml` with both `[tools]` and `[env]` produces a devShell with correct packages and environment variables
   4. `forAllSystems` wiring verified: flake exposes `devShells.x86_64-linux.default` and `devShells.aarch64-darwin.default`
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 04-01: Write lib/env.nix and integrate into fromMiseToml
-- [ ] 04-02: Wire forAllSystems and verify full devShell assembly end-to-end
+- [x] 04-01-PLAN.md — Create lib/env.nix and integrate env vars into fromMiseToml mkShell call
+- [ ] 04-02-PLAN.md — Add check derivations for env var passthrough and full end-to-end integration
 
 ### Phase 5: Tests, Documentation, and Publish
 **Goal**: mise2nix is ready for public use — tested, documented, and git-tagged.
@@ -106,5 +106,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Flake Scaffold + Parser | 2/2 | Complete | 2026-03-23 |
 | 2. Runtime Tool Resolution | 1/2 | In Progress|  |
 | 3. Utility Tool Resolution + Overrides API | 2/3 | In Progress|  |
-| 4. Env Vars + Full devShell Assembly | 0/2 | Not started | - |
+| 4. Env Vars + Full devShell Assembly | 1/2 | In Progress|  |
 | 5. Tests, Documentation, and Publish | 0/3 | Not started | - |

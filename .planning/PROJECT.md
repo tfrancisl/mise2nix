@@ -24,10 +24,9 @@ zero manual Nix required for common toolsets.
 - [x] Utilities and `"latest"` tools resolved to `pkgs.X` (latest-at-nixpkgs-pin, fully cached) — *Validated in Phase 03: utility-tool-resolution-overrides-api*
 - [x] Unknown tools accepted via `extraPackages` or `overrides` argument — *Validated in Phase 03: utility-tool-resolution-overrides-api*
 - [x] Unknown tool without override throws a helpful Nix eval error — *Validated in Phase 03: utility-tool-resolution-overrides-api*
+- [x] `[env]` section mapped to `mkShell` env vars — *Validated in Phase 04: env-vars-full-devshell-assembly*
 
 ### Active
-
-- [ ] `[env]` section mapped to `mkShell` env vars
 - [ ] README with usage examples and supported tool table
 - [ ] Example flake demonstrating common mise.toml → devShell patterns
 - [ ] Flake published with a stable outputs interface
@@ -93,4 +92,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-23 — Phase 03: utility-tool-resolution-overrides-api complete*
+*Last updated: 2026-03-23 — Phase 04: env-vars-full-devshell-assembly complete*

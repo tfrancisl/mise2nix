@@ -1,6 +1,4 @@
-{ lib, pkgs }:
-
-{
+_: {
   # Takes the [env] attrset from parsed TOML config.
   # Returns an attrset of env var name -> string value,
   # suitable for merging into pkgs.mkShell arguments.

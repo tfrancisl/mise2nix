@@ -99,6 +99,23 @@
               echo "PASS: overrides accepted" > $out
             '';
 
+          unsupported-version-error =
+            let
+              toml = builtins.toFile "bad-version.toml" ''
+                [tools]
+                node = "18"
+              '';
+              # node "18" is not in runtimes.nix map (supported: 20, 22, 24, 25); forces a throw
+              devShell = self.lib.fromMiseToml toml { inherit pkgs; };
+              result = builtins.tryEval (builtins.deepSeq devShell.nativeBuildInputs devShell);
+            in pkgs.runCommand "unsupported-version-error" {} ''
+              ${if result.success then
+                ''echo "FAIL: should have thrown for unsupported node version" && exit 1''
+              else
+                ''echo "PASS: unsupported version correctly throws error" > $out''
+              }
+            '';
+
           unknown-tool-error =
             let
               toml = builtins.toFile "unknown-test.toml" ''

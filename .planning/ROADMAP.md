@@ -143,10 +143,27 @@ Plans:
 - [x] 08-01-PLAN.md — Extend miseWrapper with interactive prompt, known-tool detection, and flake.nix patching
 - [x] 08-02-PLAN.md — Add nix flake check derivations for unknown-tool detection and abort paths
 
+### Phase 9: Mise Integration Layer
+**Goal**: `mise ls` shows all `[tools]` entries as active; `mise activate` fires automatically when entering the devShell; fish/zsh/nu users get clear one-time setup docs.
+**Depends on**: Phase 8
+**Requirements**: DX-05, DX-06
+**Success Criteria** (what must be TRUE):
+  1. A `lib/mise-installs.nix` module exports `mkMiseInstallsDir` which builds a Nix derivation mirroring the mise install directory structure for all resolved tools
+  2. `MISE_INSTALLS_DIR` is set in the devShell to the derivation output so `mise ls` shows all declared tools as active (not missing)
+  3. `MISE_OFFLINE = "1"` replaces `MISE_PREFER_OFFLINE` — prevents network calls during version resolution
+  4. `shellHook` runs `eval "$(mise activate bash)"` so `nix develop` users get full mise prompt integration automatically
+  5. README documents one-time shell rc setup for bash/zsh/fish/nushell users with direnv
+  6. `nix flake check` passes with a new check verifying the installs dir structure
+**Plans**: 2 plans
+
+Plans:
+- [ ] 09-01-PLAN.md — Create lib/mise-installs.nix and wire MISE_INSTALLS_DIR + MISE_OFFLINE into lib/default.nix
+- [ ] 09-02-PLAN.md — Add shellHook with mise activate bash, README shell activation docs, nix check
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -158,3 +175,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 6. Backend Syntax Detection + Mapping Tables | v0.2.0 | 1/2 | In Progress|  |
 | 7. Mise Wrapper Core | v0.2.0 | 1/2 | Complete    | 2026-03-23 |
 | 8. Interactive Override Patching | v0.2.0 | 2/2 | Complete    | 2026-03-24 |
+| 9. Mise Integration Layer | v0.2.0 | 0/2 | Not started | - |

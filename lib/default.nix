@@ -11,6 +11,7 @@
       npm = import ./backends/npm.nix {inherit pkgs;};
       cargo = import ./backends/cargo.nix {inherit pkgs;};
     };
+    miseInstalls = import ./mise-installs.nix {inherit lib;};
     envMod = import ./env.nix {};
     config = fromTOML (builtins.readFile path);
     tools = config.tools or {};
@@ -66,16 +67,27 @@
           "mise2nix: unknown tool '${name}' — not found in runtimes or utilities. Use 'overrides = { ${name} = pkgs.something; }' or 'extraPackages = [ pkgs.something ]' to provide it."
       );
 
-    resolvedPackages = builtins.attrValues (builtins.mapAttrs resolve tools);
+    resolvedMap = builtins.mapAttrs resolve tools;
+    resolvedPackages = builtins.attrValues resolvedMap;
+    miseInstallsDir = miseInstalls.mkMiseInstallsDir pkgs tools resolvedMap;
     envVars = envMod.mkEnvVars env;
+
+    # Known tool lists derived from backend attrsets at Nix eval time (D-02).
+    # Interpolated into the miseWrapper bash script as space-separated strings —
+    # always in sync with the Nix tables, zero duplication.
+    pipxKnown = builtins.concatStringsSep " " (builtins.attrNames (import ./backends/pipx.nix {inherit pkgs;}));
+    npmKnown = builtins.concatStringsSep " " (builtins.attrNames (import ./backends/npm.nix {inherit pkgs;}));
+    cargoKnown = builtins.concatStringsSep " " (builtins.attrNames (import ./backends/cargo.nix {inherit pkgs;}));
 
     # Wrapper that intercepts `mise use` and passes all other subcommands through
     # to the real mise binary unchanged (WRAP-01, DX-06).
     #
-    # For `mise use`: writes the tool entry to mise.toml via GNU sed (cross-platform
-    # safe — BSD sed on macOS uses different -i syntax) and prints a mise2nix-attributed
-    # reload message (WRAP-02, DX-05). Does NOT call the real `mise use` to avoid
-    # triggering tool installs (D-01).
+    # For `mise use` with a known/mapped backend:tool: writes the entry to mise.toml
+    # and prints a reload message (WRAP-02, DX-05).
+    #
+    # For `mise use` with an unknown backend or unmapped tool within a known backend:
+    # prompts interactively for a nixpkgs attribute and patches the nearest flake.nix
+    # overrides block (WRAP-03).
     #
     # All external tools are referenced by Nix store path because writeShellScriptBin
     # does not add anything to PATH.
@@ -107,6 +119,122 @@
         TOOL="$TOOL_SPEC"
       fi
 
+      # Detect whether this is a backend:tool spec and whether it is known/mapped (D-03).
+      # Known tool lists are derived from Nix attrsets at build time (D-02).
+      PIPX_KNOWN="${pipxKnown}"
+      NPM_KNOWN="${npmKnown}"
+      CARGO_KNOWN="${cargoKnown}"
+
+      NEEDS_PROMPT=0
+      if [[ "$TOOL" == *:* ]]; then
+        BACKEND="''${TOOL%%:*}"
+        BARE_TOOL="''${TOOL#*:}"
+        if [[ "$BACKEND" != "pipx" && "$BACKEND" != "npm" && "$BACKEND" != "cargo" ]]; then
+          # Unknown backend (ubi:, gh:, etc.)
+          NEEDS_PROMPT=1
+        else
+          # Known backend — check if the bare tool name is in the known list
+          case "$BACKEND" in
+            pipx) KNOWN_LIST="$PIPX_KNOWN" ;;
+            npm)  KNOWN_LIST="$NPM_KNOWN"  ;;
+            cargo) KNOWN_LIST="$CARGO_KNOWN" ;;
+          esac
+          FOUND=0
+          for k in $KNOWN_LIST; do
+            if [ "$k" = "$BARE_TOOL" ]; then
+              FOUND=1
+              break
+            fi
+          done
+          if [ "$FOUND" -eq 0 ]; then
+            # Unmapped tool within a known backend
+            NEEDS_PROMPT=1
+          fi
+        fi
+      fi
+
+      if [ "$NEEDS_PROMPT" -eq 1 ]; then
+        # Interactive prompt for unknown/unmapped tools (WRAP-03).
+        # Trap SIGINT (Ctrl-C) to abort cleanly with no file modifications.
+        _mise2nix_cancel() {
+          echo ""
+          echo "[mise2nix] Cancelled."
+          exit 0
+        }
+        trap _mise2nix_cancel INT
+
+        printf "[mise2nix] '%s' is not in the Nix backend tables.\n" "$TOOL"
+        printf "Enter nixpkgs attribute for '%s' (e.g. ripgrep or pkgs.ripgrep, Enter to cancel): " "$TOOL"
+        read -r NIX_ATTR </dev/tty
+
+        trap - INT
+
+        # Empty input → abort cleanly (D-06)
+        if [ -z "$NIX_ATTR" ]; then
+          echo "[mise2nix] Cancelled."
+          exit 0
+        fi
+
+        # Strip leading pkgs. prefix if present (D-04)
+        ATTR_NAME="''${NIX_ATTR#pkgs.}"
+
+        # Write entry to mise.toml (same as known path)
+        TOML_FILE="''${MISE_CONFIG_FILE:-mise.toml}"
+        ENTRY="\"''${TOOL}\" = \"''${VERSION}\""
+
+        if [ ! -f "$TOML_FILE" ]; then
+          printf '[tools]\n%s\n' "$ENTRY" > "$TOML_FILE"
+        elif ${pkgs.gnugrep}/bin/grep -q '^\[tools\]' "$TOML_FILE"; then
+          ${pkgs.gnused}/bin/sed -i "/^\[tools\]/a ''${ENTRY}" "$TOML_FILE"
+        else
+          printf '\n[tools]\n%s\n' "$ENTRY" >> "$TOML_FILE"
+        fi
+
+        # Patch the nearest flake.nix overrides block (D-07, D-08, D-09).
+        # Walk up from $PWD toward filesystem root to find the first flake.nix.
+        FLAKE_DIR="$PWD"
+        FLAKE_NIX=""
+        while true; do
+          if [ -f "$FLAKE_DIR/flake.nix" ]; then
+            FLAKE_NIX="$FLAKE_DIR/flake.nix"
+            break
+          fi
+          PARENT="$(${pkgs.coreutils}/bin/dirname "$FLAKE_DIR")"
+          if [ "$PARENT" = "$FLAKE_DIR" ]; then
+            # Reached filesystem root — no flake.nix found
+            break
+          fi
+          FLAKE_DIR="$PARENT"
+        done
+
+        if [ -z "$FLAKE_NIX" ]; then
+          echo "[mise2nix] Warning: no flake.nix found walking up from $PWD — skipping flake.nix patch."
+          echo "[mise2nix] Add manually: overrides = { \"$TOOL\" = pkgs.$ATTR_NAME; };"
+        elif ${pkgs.gnugrep}/bin/grep -q 'overrides = {' "$FLAKE_NIX"; then
+          # Append new entry inside existing overrides = { ... } block.
+          # Sed pattern: find the line with 'overrides = {' and append the new entry after it.
+          OVERRIDE_ENTRY="      \"''${TOOL}\" = pkgs.''${ATTR_NAME};"
+          ${pkgs.gnused}/bin/sed -i "/overrides = {/a\\''${OVERRIDE_ENTRY}" "$FLAKE_NIX"
+          echo "[mise2nix] Patched $FLAKE_NIX: added \"$TOOL\" = pkgs.$ATTR_NAME;"
+        else
+          # No overrides block found — print a hint rather than attempting fragile injection
+          echo "[mise2nix] Warning: no 'overrides = {' block found in $FLAKE_NIX."
+          echo "[mise2nix] Add manually to your fromMiseToml call:"
+          echo "[mise2nix]   overrides = { \"$TOOL\" = pkgs.$ATTR_NAME; };"
+        fi
+
+        if [ -n "''${DIRENV_DIR:-}" ]; then
+          RELOAD_CMD="direnv reload"
+        else
+          RELOAD_CMD="nix develop"
+        fi
+
+        echo "[mise2nix] '$TOOL' written to $TOML_FILE."
+        echo "[mise2nix] Tool resolution is Nix-managed. Run \`''${RELOAD_CMD}\` to enter the updated shell."
+        exit 0
+      fi
+
+      # Known/mapped tool path (unchanged from phase 7, WRAP-02)
       TOML_FILE="''${MISE_CONFIG_FILE:-mise.toml}"
       ENTRY="\"''${TOOL}\" = \"''${VERSION}\""
 
@@ -129,12 +257,24 @@
     '';
   in
     pkgs.mkShell ({
-        # Prevent mise from trying to download/install tools that Nix already provides.
-        # Analogous to UV_NO_DOWNLOAD in uv2nix. User [env] entries can override this.
+        # Point mise at the Nix-managed installs derivation so `mise ls` shows all
+        # declared tools as active without network access or installation.
+        MISE_INSTALLS_DIR = miseInstallsDir;
+        # Prevent mise from installing tools itself or hitting the network.
+        MISE_OFFLINE = "1";
+        MISE_AUTO_INSTALL = "false";
+        MISE_EXEC_AUTO_INSTALL = "false";
         MISE_NOT_FOUND_AUTO_INSTALL = "false";
       }
       // envVars
       // {
         packages = [miseWrapper] ++ resolvedPackages ++ extraPackages;
+        # Auto-activate mise for `nix develop` (bash) users so the prompt hook
+        # updates PATH on cd and `mise ls` shows the active toolset.
+        # direnv users get MISE_INSTALLS_DIR exported automatically; for fish/zsh/nu
+        # they need `eval "$(mise activate <shell>)"` once in their shell rc.
+        shellHook = ''
+          eval "$(${pkgs.mise}/bin/mise activate bash)"
+        '';
       });
 }

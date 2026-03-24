@@ -130,3 +130,10 @@ Both string and integer values are supported (integers are coerced to strings).
 - **nixpkgs only** — npm-backend, GitHub release, and pipx tools are not resolved automatically. Use `extraPackages` or `overrides` for these.
 - **Single version per tool** — tools like `rust`, `deno`, `bun`, `terraform`, and `kubectl` have one version in nixpkgs; the version string in `mise.toml` is ignored.
 - **Unknown tool** — requesting a tool not in the runtimes or utilities table (and not covered by `overrides`) causes a `builtins.throw` at eval time.
+
+
+# License
+
+This software is dual-licensed under the **European Union Public License 1.2 (EUPL-1.2)** and the **GNU Affero General Public License v3.0 (AGPL-3.0)**. You may use, modify, and distribute this software under the terms of either license, at your option.
+
+`SPDX-License-Identifier: EUPL-1.2 OR AGPL-3.0-only`

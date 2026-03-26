@@ -37,7 +37,7 @@
         pkgs = nixpkgs.legacyPackages.${system};
       in {
         parse-toml = pkgs.runCommand "parse-toml" {} ''
-          node_val='${(builtins.fromTOML (builtins.readFile ./mise.toml)).tools.node}'
+          node_val='${(fromTOML (builtins.readFile ./mise.toml)).tools.node}'
           if [ "$node_val" != "22" ]; then
             echo "FAIL: expected tools.node = 22, got $node_val"
             exit 1

@@ -3,16 +3,16 @@
   pkgs,
 }: let
   # Version string normalization helpers.
-  # Always apply builtins.toString first to handle TOML bare integers (Pitfall 4).
-  splitVer = v: lib.splitString "." (builtins.toString v);
+  # Always apply toString first to handle TOML bare integers (Pitfall 4).
+  splitVer = v: lib.splitString "." (toString v);
   major = v: builtins.head (splitVer v);
   majMin = v: let p = splitVer v; in "${builtins.elemAt p 0}${builtins.elemAt p 1}";
   majMinUs = v: let p = splitVer v; in "${builtins.elemAt p 0}_${builtins.elemAt p 1}";
 
   # node / nodejs resolver (defined once, referenced by both attrset keys)
   resolveNode = version: let
-    ver = major (builtins.toString version);
-    map = {
+    ver = major (toString version);
+    _map = {
       "20" = pkgs.nodejs_20;
       "22" = pkgs.nodejs_22;
       "24" = pkgs.nodejs_24;
@@ -21,12 +21,12 @@
   in
     if version == "latest"
     then pkgs.nodejs
-    else map.${ver} or (builtins.throw "mise2nix: node version ${ver} not available in nixpkgs — supported: 20, 22, 24, 25");
+    else _map.${ver} or (throw "mise2nix: node version ${ver} not available in nixpkgs — supported: 20, 22, 24, 25");
 
   # go / golang resolver
   resolveGo = version: let
-    ver = majMinUs (builtins.toString version);
-    map = {
+    ver = majMinUs (toString version);
+    _map = {
       "1_24" = pkgs.go_1_24;
       "1_25" = pkgs.go_1_25;
       "1_26" = pkgs.go_1_26;
@@ -34,7 +34,7 @@
   in
     if version == "latest"
     then pkgs.go
-    else map.${ver} or (builtins.throw "mise2nix: go version ${ver} not available in nixpkgs — supported: 1.24, 1.25, 1.26");
+    else _map.${ver} or (throw "mise2nix: go version ${ver} not available in nixpkgs — supported: 1.24, 1.25, 1.26");
 in {
   # node / nodejs
   node = resolveNode;
@@ -42,8 +42,8 @@ in {
 
   # python
   python = version: let
-    ver = majMin (builtins.toString version);
-    map = {
+    ver = majMin (toString version);
+    _map = {
       "311" = pkgs.python311;
       "312" = pkgs.python312;
       "313" = pkgs.python313;
@@ -53,7 +53,7 @@ in {
   in
     if version == "latest"
     then pkgs.python3
-    else map.${ver} or (builtins.throw "mise2nix: python version ${version} not available in nixpkgs — supported: 3.11, 3.12, 3.13, 3.14, 3.15");
+    else _map.${ver} or (throw "mise2nix: python version ${version} not available in nixpkgs — supported: 3.11, 3.12, 3.13, 3.14, 3.15");
 
   # go / golang
   go = resolveGo;
@@ -61,8 +61,8 @@ in {
 
   # ruby
   ruby = version: let
-    ver = majMinUs (builtins.toString version);
-    map = {
+    ver = majMinUs (toString version);
+    _map = {
       "3_3" = pkgs.ruby_3_3;
       "3_4" = pkgs.ruby_3_4;
       "3_5" = pkgs.ruby_3_5;
@@ -71,12 +71,12 @@ in {
   in
     if version == "latest"
     then pkgs.ruby
-    else map.${ver} or (builtins.throw "mise2nix: ruby version ${ver} not available in nixpkgs — supported: 3.3, 3.4, 3.5, 4.0");
+    else _map.${ver} or (throw "mise2nix: ruby version ${ver} not available in nixpkgs — supported: 3.3, 3.4, 3.5, 4.0");
 
   # java (jdk)
   java = version: let
-    ver = major (builtins.toString version);
-    map = {
+    ver = major (toString version);
+    _map = {
       "8" = pkgs.jdk8;
       "11" = pkgs.jdk11;
       "17" = pkgs.jdk17;
@@ -86,12 +86,12 @@ in {
   in
     if version == "latest"
     then pkgs.jdk
-    else map.${ver} or (builtins.throw "mise2nix: java version ${ver} not available in nixpkgs — supported: 8, 11, 17, 21, 25");
+    else _map.${ver} or (throw "mise2nix: java version ${ver} not available in nixpkgs — supported: 8, 11, 17, 21, 25");
 
   # erlang
   erlang = version: let
-    ver = major (builtins.toString version);
-    map = {
+    ver = major (toString version);
+    _map = {
       "26" = pkgs.erlang_26;
       "27" = pkgs.erlang_27;
       "28" = pkgs.erlang_28;
@@ -100,12 +100,12 @@ in {
   in
     if version == "latest"
     then pkgs.erlang
-    else map.${ver} or (builtins.throw "mise2nix: erlang version ${ver} not available in nixpkgs — supported: 26, 27, 28, 29");
+    else _map.${ver} or (throw "mise2nix: erlang version ${ver} not available in nixpkgs — supported: 26, 27, 28, 29");
 
   # elixir
   elixir = version: let
-    ver = majMinUs (builtins.toString version);
-    map = {
+    ver = majMinUs (toString version);
+    _map = {
       "1_15" = pkgs.elixir_1_15;
       "1_16" = pkgs.elixir_1_16;
       "1_17" = pkgs.elixir_1_17;
@@ -115,12 +115,12 @@ in {
   in
     if version == "latest"
     then pkgs.elixir
-    else map.${ver} or (builtins.throw "mise2nix: elixir version ${ver} not available in nixpkgs — supported: 1.15, 1.16, 1.17, 1.18, 1.19");
+    else _map.${ver} or (throw "mise2nix: elixir version ${ver} not available in nixpkgs — supported: 1.15, 1.16, 1.17, 1.18, 1.19");
 
   # php
   php = version: let
-    ver = majMin (builtins.toString version);
-    map = {
+    ver = majMin (toString version);
+    _map = {
       "82" = pkgs.php82;
       "83" = pkgs.php83;
       "84" = pkgs.php84;
@@ -129,7 +129,7 @@ in {
   in
     if version == "latest"
     then pkgs.php
-    else map.${ver} or (builtins.throw "mise2nix: php version ${version} not available in nixpkgs — supported: 8.2, 8.3, 8.4, 8.5");
+    else _map.${ver} or (throw "mise2nix: php version ${version} not available in nixpkgs — supported: 8.2, 8.3, 8.4, 8.5");
 
   # rust — nixpkgs does not ship versioned Rust toolchain attrs;
   # pkgs.rustup is the standard. All version strings map silently to pkgs.rustup.

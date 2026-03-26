@@ -12,7 +12,7 @@
       cargo = import ./backends/cargo.nix {inherit pkgs;};
     };
     envMod = import ./env.nix {};
-    config = builtins.fromTOML (builtins.readFile path);
+    config = fromTOML (builtins.readFile path);
     tools = config.tools or {};
     env = config.env or {};
 
@@ -22,7 +22,7 @@
     resolveBackend = backend: tool: _version:
       if !(backends ? ${backend})
       then
-        builtins.throw
+        throw
         "mise2nix: unknown backend '${backend}' for tool '${backend}:${tool}'. Supported backends: pipx, npm, cargo. Use 'overrides = { \"${backend}:${tool}\" = pkgs.something; }' or 'extraPackages = [ pkgs.something ]'."
       else let
         table = backends.${backend};
@@ -30,7 +30,7 @@
         table.${
           tool
         }
-        or (builtins.throw
+        or (throw
           "mise2nix: '${tool}' is not in the ${backend} mapping table. Use 'overrides = { \"${backend}:${tool}\" = pkgs.something; }' or 'extraPackages = [ pkgs.something ]'.");
 
     # Resolution order for each tool:
@@ -40,7 +40,7 @@
     # 4. Check utilities (direct pkgs.X mapping)
     # 5. Throw descriptive error (unknown tool)
     resolve = name: version: let
-      v = builtins.toString version;
+      v = toString version;
       parsed = builtins.match "([^:]+):(.*)" name;
       isBackend = parsed != null;
       backend =
@@ -62,7 +62,7 @@
         else if utilities ? ${name}
         then utilities.${name} v
         else
-          builtins.throw
+          throw
           "mise2nix: unknown tool '${name}' — not found in runtimes or utilities. Use 'overrides = { ${name} = pkgs.something; }' or 'extraPackages = [ pkgs.something ]' to provide it."
       );
 

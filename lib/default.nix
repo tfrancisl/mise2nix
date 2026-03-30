@@ -74,9 +74,9 @@
     # Known tool lists derived from backend attrsets at Nix eval time (D-02).
     # Interpolated into the miseWrapper bash script as space-separated strings —
     # always in sync with the Nix tables, zero duplication.
-    pipxKnown = builtins.concatStringsSep " " (builtins.attrNames (import ./backends/pipx.nix {inherit pkgs;}));
-    npmKnown = builtins.concatStringsSep " " (builtins.attrNames (import ./backends/npm.nix {inherit pkgs;}));
-    cargoKnown = builtins.concatStringsSep " " (builtins.attrNames (import ./backends/cargo.nix {inherit pkgs;}));
+    pipxKnown = builtins.concatStringsSep " " (builtins.attrNames backends.pipx);
+    npmKnown = builtins.concatStringsSep " " (builtins.attrNames backends.npm);
+    cargoKnown = builtins.concatStringsSep " " (builtins.attrNames backends.cargo);
 
     # Wrapper that intercepts `mise use` and passes all other subcommands through
     # to the real mise binary unchanged (WRAP-01, DX-06).

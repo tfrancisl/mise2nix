@@ -17,7 +17,7 @@ Add mise2nix as a flake input and wire `fromMiseToml` into your `devShells`:
 ```nix
 {
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-  inputs.mise2nix.url = "https://codeberg.org/tttffflll/mise2nix";
+  inputs.mise2nix.url = "git+https://codeberg.org/tttffflll/mise2nix";
 
   outputs = { self, nixpkgs, mise2nix }:
     let
@@ -124,11 +124,12 @@ Both string and integer values are supported (integers are coerced to strings).
 
 ## Limitations
 
-- **No `[tasks]` section** — task runner support is v2. Tasks are ignored.
-- **No exact patch versions** — nixpkgs pin determines the exact version installed. Reproducibility comes from pinning `nixpkgs` in your `flake.lock`, not from mise version strings.
+- **No `[tasks]` section** — task runner support comes later. Tasks are ignored. YMMV using tasks with the mise binary out of the box.
+- **No exact patch versions (without overrides)** — nixpkgs pin determines the exact version installed. Reproducibility comes from pinning `nixpkgs` in your `flake.lock`, not from mise version strings.
 - **No `mise.lock` support** — mise.lock tracks mise's own downloads; it is not used for nixpkgs resolution.
-- **nixpkgs only** — npm-backend, GitHub release, and pipx tools are not resolved automatically. Use `extraPackages` or `overrides` for these.
-- **Single version per tool** — tools like `rust`, `deno`, `bun`, `terraform`, and `kubectl` have one version in nixpkgs; the version string in `mise.toml` is ignored.
+- **Limited compat with other dev shell tools** — produces a `pkgs.mkShell` instead of providing inputs for a mkShell.
+- **nixpkgs only (without overrides)** — npm-backend, GitHub release, and pipx tools are not resolved automatically. Use `extraPackages` or `overrides` for these.
+- **Single version per tool (without overrides)** — tools like `rust`, `deno`, `bun`, `terraform`, and `kubectl` have one version in nixpkgs; the version string in `mise.toml` is ignored.
 - **Unknown tool** — requesting a tool not in the runtimes or utilities table (and not covered by `overrides`) causes a `builtins.throw` at eval time.
 
 

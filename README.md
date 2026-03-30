@@ -17,7 +17,7 @@ Add mise2nix as a flake input and wire `fromMiseToml` into your `devShells`:
 ```nix
 {
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-  inputs.mise2nix.url = "github:OWNER/REPO";
+  inputs.mise2nix.url = "https://codeberg.org/tttffflll/mise2nix";
 
   outputs = { self, nixpkgs, mise2nix }:
     let

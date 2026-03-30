@@ -12,27 +12,32 @@ Inspired by [uv2nix](https://github.com/pyproject-nix/uv2nix): consume a configu
 
 ## Quickstart
 
-Add mise2nix as a flake input and wire `fromMiseToml` into your `devShells`:
+This flake provides a simple template which can be initialized with `nix flake init -t git+https://codeberg.org/tttffflll/mise2nix`.
+
+Alternatively, add mise2nix as a flake input and wire `fromMiseToml` into your `devShells`:
 
 ```nix
 {
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
   inputs.mise2nix.url = "git+https://codeberg.org/tttffflll/mise2nix";
 
-  outputs = { self, nixpkgs, mise2nix }:
-    let
-      forAllSystems = nixpkgs.lib.genAttrs [
-        "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"
-      ];
-    in {
-      devShells = forAllSystems (system:
-        let pkgs = nixpkgs.legacyPackages.${system};
-        in {
-          default = mise2nix.lib.fromMiseToml ./mise.toml { inherit pkgs; };
-        }
-      );
-    };
+  outputs = {
+    nixpkgs,
+    mise2nix,
+    ...
+  }: let
+    forAllSystems = nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed;
+  in {
+    devShells = forAllSystems (
+      system: let
+        pkgs = nixpkgs.legacyPackages.${system};
+      in {
+        default = mise2nix.lib.fromMiseToml ./mise.toml {inherit pkgs;};
+      }
+    );
+  };
 }
+
 ```
 
 Then run `nix develop` — mise2nix reads your `mise.toml` and builds the shell.

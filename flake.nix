@@ -17,6 +17,14 @@
   in {
     lib = import ./lib {inherit lib;};
 
+    templates = {
+      basic = {
+        path = ./templates/basic;
+        description = "A simple flake with a mise2nix devShell.";
+      };
+      default = self.templates.basic;
+    };
+
     devShells = forAllSystems (
       system: let
         pkgs = nixpkgs.legacyPackages.${system};

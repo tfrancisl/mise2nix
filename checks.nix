@@ -1,9 +1,21 @@
 {
   self,
   pkgs,
-}: {
+}: let
+  defaultToml = builtins.toFile "mise-default.toml" ''
+    [tools]
+    node = "22"
+    python = "3.11"
+    jq = "latest"
+    ripgrep = "latest"
+    fd = "latest"
+
+    [env]
+    NODE_ENV = "development"
+  '';
+in {
   parse-toml = pkgs.runCommand "parse-toml" {} ''
-    node_val='${(fromTOML (builtins.readFile ./mise.toml)).tools.node}'
+    node_val='${(fromTOML (builtins.readFile defaultToml)).tools.node}'
     if [ "$node_val" != "22" ]; then
       echo "FAIL: expected tools.node = 22, got $node_val"
       exit 1
@@ -12,7 +24,7 @@
   '';
 
   devshell-builds = let
-    devShell = self.lib.fromMiseToml ./mise.toml {inherit pkgs;};
+    devShell = self.lib.fromMiseToml defaultToml {inherit pkgs;};
   in
     pkgs.runCommand "devshell-builds" {} ''
       echo "devShell derivation: ${devShell}"
@@ -20,7 +32,7 @@
     '';
 
   runtime-resolution = let
-    devShell = self.lib.fromMiseToml ./mise.toml {inherit pkgs;};
+    devShell = self.lib.fromMiseToml defaultToml {inherit pkgs;};
   in
     pkgs.runCommand "runtime-resolution" {} ''
       echo "devShell with runtimes: ${devShell}"
@@ -42,7 +54,7 @@
     '';
 
   resolve-utilities = let
-    devShell = self.lib.fromMiseToml ./mise.toml {inherit pkgs;};
+    devShell = self.lib.fromMiseToml defaultToml {inherit pkgs;};
   in
     pkgs.runCommand "resolve-utilities" {} ''
       echo "devShell with utilities: ${devShell}"
@@ -152,7 +164,7 @@
     '';
 
   full-integration = let
-    devShell = self.lib.fromMiseToml ./mise.toml {inherit pkgs;};
+    devShell = self.lib.fromMiseToml defaultToml {inherit pkgs;};
   in
     pkgs.runCommand "full-integration" {} ''
       echo "devShell: ${devShell}"
@@ -924,7 +936,7 @@
     flakeFixture = builtins.toFile "fixture-flake.nix" ''
       {
         outputs = { self, nixpkgs }: {
-          devShells.default = self.lib.fromMiseToml ./mise.toml {
+          devShells.default = self.lib.fromMiseToml defaultToml {
             inherit pkgs;
             overrides = {
               "pipx:black" = pkgs.python3Packages.black;

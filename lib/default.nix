@@ -92,6 +92,25 @@
     # All external tools are referenced by Nix store path because writeShellScriptBin
     # does not add anything to PATH.
     miseWrapper = pkgs.writeShellScriptBin "mise" ''
+      if [ "$1" = "install" ]; then
+        # Run real mise install, capturing combined output to filter known read-only errors.
+        # The Nix store is immutable so symlink rebuilds always fail — this is expected.
+        INSTALL_OUT="$(${pkgs.mise}/bin/mise "$@" 2>&1)"
+        FILTERED="$(printf '%s\n' "$INSTALL_OUT" \
+          | ${pkgs.gnugrep}/bin/grep -v 'failed to rebuild runtime symlinks' \
+          | ${pkgs.gnugrep}/bin/grep -v 'failed to ln -sf' \
+          | ${pkgs.gnugrep}/bin/grep -v 'Read-only file system')"
+        [ -n "$FILTERED" ] && printf '%s\n' "$FILTERED"
+
+        if [ -n "''${DIRENV_DIR:-}" ]; then
+          RELOAD_CMD="direnv reload"
+        else
+          RELOAD_CMD="nix develop"
+        fi
+        echo "[mise2nix] Tools are Nix-managed. Run \`''${RELOAD_CMD}\` to activate any new tools."
+        exit 0
+      fi
+
       if [ "$1" != "use" ]; then
         exec ${pkgs.mise}/bin/mise "$@"
       fi

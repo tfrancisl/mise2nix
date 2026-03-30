@@ -1,7 +1,6 @@
 {lib}: {
   fromMiseToml = path: {
     pkgs,
-    extraPackages ? [],
     overrides ? {},
   }: let
     runtimes = import ./runtimes.nix {inherit lib pkgs;};
@@ -24,7 +23,7 @@
       if !(backends ? ${backend})
       then
         throw
-        "mise2nix: unknown backend '${backend}' for tool '${backend}:${tool}'. Supported backends: pipx, npm, cargo. Use 'overrides = { \"${backend}:${tool}\" = pkgs.something; }' or 'extraPackages = [ pkgs.something ]'."
+        "mise2nix: unknown backend '${backend}' for tool '${backend}:${tool}'. Supported backends: pipx, npm, cargo. Use 'overrides = { \"${backend}:${tool}\" = pkgs.something; }'."
       else let
         table = backends.${backend};
       in
@@ -32,7 +31,7 @@
           tool
         }
         or (throw
-          "mise2nix: '${tool}' is not in the ${backend} mapping table. Use 'overrides = { \"${backend}:${tool}\" = pkgs.something; }' or 'extraPackages = [ pkgs.something ]'.");
+          "mise2nix: '${tool}' is not in the ${backend} mapping table. Use 'overrides = { \"${backend}:${tool}\" = pkgs.something; }'.");
 
     # Resolution order for each tool:
     # 1. Check overrides (user-provided replacement) -- highest priority, wins for ALL key forms
@@ -64,7 +63,7 @@
         then utilities.${name} v
         else
           throw
-          "mise2nix: unknown tool '${name}' — not found in runtimes or utilities. Use 'overrides = { ${name} = pkgs.something; }' or 'extraPackages = [ pkgs.something ]' to provide it."
+          "mise2nix: unknown tool '${name}' — not found in runtimes or utilities. Use 'overrides = { ${name} = pkgs.something; }' to provide it."
       );
 
     resolvedMap = builtins.mapAttrs resolve tools;
@@ -274,8 +273,10 @@
       echo "[mise2nix] '$TOOL' written to $TOML_FILE."
       echo "[mise2nix] Tool resolution is Nix-managed. Run \`''${RELOAD_CMD}\` to enter the updated shell."
     '';
-  in
-    pkgs.mkShell ({
+  in {
+    envVars =
+      envVars
+      // {
         # Point mise at the Nix-managed installs derivation so `mise ls` shows all
         # declared tools as active without network access or installation.
         MISE_INSTALLS_DIR = miseInstallsDir;
@@ -284,16 +285,14 @@
         MISE_AUTO_INSTALL = "false";
         MISE_EXEC_AUTO_INSTALL = "false";
         MISE_NOT_FOUND_AUTO_INSTALL = "false";
-      }
-      // envVars
-      // {
-        packages = [miseWrapper] ++ resolvedPackages ++ extraPackages;
-        # Auto-activate mise for `nix develop` (bash) users so the prompt hook
-        # updates PATH on cd and `mise ls` shows the active toolset.
-        # direnv users get MISE_INSTALLS_DIR exported automatically; for fish/zsh/nu
-        # they need `eval "$(mise activate <shell>)"` once in their shell rc.
-        shellHook = ''
-          eval "$(${pkgs.mise}/bin/mise activate bash)"
-        '';
-      });
+      };
+    packages = [miseWrapper] ++ resolvedPackages;
+    # Auto-activate mise for `nix develop` (bash) users so the prompt hook
+    # updates PATH on cd and `mise ls` shows the active toolset.
+    # direnv users get MISE_INSTALLS_DIR exported automatically; for fish/zsh/nu
+    # they need `eval "$(mise activate <shell>)"` once in their shell rc.
+    shellHook = ''
+      eval "$(${pkgs.mise}/bin/mise activate bash)"
+    '';
+  };
 }

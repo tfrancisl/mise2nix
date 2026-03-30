@@ -18,8 +18,13 @@ Alternatively, add mise2nix as a flake input and wire `fromMiseToml` into your `
 
 ```nix
 {
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-  inputs.mise2nix.url = "git+https://codeberg.org/tttffflll/mise2nix";
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    mise2nix = {
+      url = "git+https://codeberg.org/tttffflll/mise2nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
 
   outputs = {
     nixpkgs,

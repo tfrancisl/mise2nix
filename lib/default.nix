@@ -1,8 +1,13 @@
-{lib}: {
-  fromMiseToml = path: {
+{lib}: let
+  mkShellInputsFromMise = {
+    tomlPath,
     pkgs,
     overrides ? {},
   }: let
+    config = fromTOML (builtins.readFile tomlPath);
+    tools = config.tools or {};
+    env = config.env or {};
+
     runtimes = import ./runtimes.nix {inherit lib pkgs;};
     utilities = import ./utilities.nix {inherit pkgs;};
     backends = {
@@ -12,10 +17,6 @@
     };
     miseInstalls = import ./mise-installs.nix {inherit lib;};
     envMod = import ./env.nix {};
-    config = fromTOML (builtins.readFile path);
-    tools = config.tools or {};
-    env = config.env or {};
-
     # Known tool lists derived from backend attrsets at Nix eval time (D-02).
     pipxKnown = builtins.concatStringsSep " " (builtins.attrNames backends.pipx);
     npmKnown = builtins.concatStringsSep " " (builtins.attrNames backends.npm);
@@ -37,7 +38,7 @@
         table.${
           tool
         }
-        or (throw
+      or (throw
           "mise2nix: '${tool}' is not in the ${backend} mapping table. Use 'overrides = { \"${backend}:${tool}\" = pkgs.something; }'.");
 
     # Resolution order for each tool:
@@ -99,4 +100,25 @@
       eval "$(${pkgs.mise}/bin/mise activate bash)"
     '';
   };
+  mkShellFromMise = {
+    tomlPath,
+    pkgs,
+    prefixShellHook ? "",
+    postfixShellHook ? "",
+    extraPackages ? [],
+    extraEnvVars ? {},
+    overrides ? {},
+  }: let
+    shellInputs = mkShellInputsFromMise {inherit tomlPath pkgs overrides;};
+  in
+    pkgs.mkShell (
+      {
+        shellHook = prefixShellHook + shellInputs.shellHook + postfixShellHook;
+        packages = shellInputs.packages ++ extraPackages;
+      }
+      // (shellInputs.envVars // extraEnvVars)
+    );
+in {
+  inherit mkShellInputsFromMise;
+  inherit mkShellFromMise;
 }

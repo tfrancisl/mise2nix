@@ -3,7 +3,7 @@
 Converts `mise.toml` into a Nix devShell — no manual Nix required for common toolsets.
 
 ```nix
-mise2nix.lib.fromMiseToml ./mise.toml { inherit pkgs; }
+mise2nix.lib.mkShellFromMise { tomlPath = ./mise.toml; inherit pkgs; }
 ```
 
 Inspired by [uv2nix](https://github.com/pyproject-nix/uv2nix): consume a configuration file, get Nix.
@@ -14,7 +14,7 @@ Inspired by [uv2nix](https://github.com/pyproject-nix/uv2nix): consume a configu
 
 This flake provides a simple template which can be initialized with `nix flake init -t git+https://codeberg.org/tttffflll/mise2nix`.
 
-Alternatively, add mise2nix as a flake input and wire `fromMiseToml` into your `devShells`:
+Alternatively, add mise2nix as a flake input and wire `mkShellFromMise` into your `devShells`:
 
 ```nix
 {
@@ -37,7 +37,10 @@ Alternatively, add mise2nix as a flake input and wire `fromMiseToml` into your `
       system: let
         pkgs = nixpkgs.legacyPackages.${system};
       in {
-        default = mise2nix.lib.fromMiseToml ./mise.toml {inherit pkgs;};
+        default = mise2nix.lib.mkShellFromMise {
+            tomlPath = ./mise.toml;
+            inherit pkgs;
+          };
       }
     );
   };
@@ -81,29 +84,43 @@ All utility versions resolve to the nixpkgs-pinned version (version string is ig
 
 ## API Reference
 
-### `fromMiseToml`
+### `mkShellFromMise`
 
 ```
-fromMiseToml : path -> { pkgs, extraPackages ? [], overrides ? {} } -> derivation
+mkShellFromMise : { tomlPath, pkgs, overrides ? {}, extraPackages ? [], extraEnvVars ? {}, prefixShellHook ? "", postfixShellHook ? "" } -> derivation
 ```
 
 | Argument | Type | Description |
 |----------|------|-------------|
-| `path` | path | Path to your `mise.toml` file |
+| `tomlPath` | path | Path to your `mise.toml` file |
 | `pkgs` | attrset | nixpkgs package set for the target system |
-| `extraPackages` | list | Additional packages appended to the devShell |
 | `overrides` | attrset | Replace a tool's resolved package by mise tool name |
+| `extraPackages` | list | Additional packages appended to the devShell |
+| `extraEnvVars` | attrset | Additional environment variables merged into the shell |
+| `prefixShellHook` | string | Shell script prepended to the generated `shellHook` |
+| `postfixShellHook` | string | Shell script appended to the generated `shellHook` |
 
 **Resolution order:** `overrides` → runtimes → utilities → `builtins.throw`
 
 Unknown tools without an override throw a descriptive error at eval time naming the tool and explaining how to fix it.
+
+### `mkShellInputsFromMise`
+
+For advanced use cases where you need to compose the shell yourself:
+
+```
+mkShellInputsFromMise : { tomlPath, pkgs, overrides ? {} } -> { packages, shellHook, envVars }
+```
+
+Returns the raw inputs (`packages`, `shellHook`, `envVars`) rather than a fully built `mkShell` derivation.
 
 ### Overrides pattern
 
 Override a single tool (e.g. pin node to a different version than mise.toml requests):
 
 ```nix
-mise2nix.lib.fromMiseToml ./mise.toml {
+mise2nix.lib.mkShellFromMise {
+  tomlPath = ./mise.toml;
   inherit pkgs;
   overrides = { node = pkgs.nodejs_20; };
 }
@@ -112,7 +129,8 @@ mise2nix.lib.fromMiseToml ./mise.toml {
 Add packages not present in mise.toml (e.g. a GitHub release tool):
 
 ```nix
-mise2nix.lib.fromMiseToml ./mise.toml {
+mise2nix.lib.mkShellFromMise {
+  tomlPath = ./mise.toml;
   inherit pkgs;
   extraPackages = [ pkgs.some-other-tool ];
 }
@@ -137,8 +155,8 @@ Both string and integer values are supported (integers are coerced to strings).
 - **No `[tasks]` section** — task runner support comes later. Tasks are ignored. YMMV using tasks with the mise binary out of the box.
 - **No exact patch versions (without overrides)** — nixpkgs pin determines the exact version installed. Reproducibility comes from pinning `nixpkgs` in your `flake.lock`, not from mise version strings.
 - **No `mise.lock` support** — mise.lock tracks mise's own downloads; it is not used for nixpkgs resolution.
-- **Limited compat with other dev shell tools** — produces a `pkgs.mkShell` instead of providing inputs for a mkShell.
-- **nixpkgs only (without overrides)** — npm-backend, GitHub release, and pipx tools are not resolved automatically. Use `extraPackages` or `overrides` for these.
+- **Limited compat with other dev shell tools** — `mkShellFromMise` produces a fully built `pkgs.mkShell`. Use `mkShellInputsFromMise` if you need to compose inputs into your own `mkShell`.
+- **nixpkgs only (without overrides)** — npm-backend, GitHub release, and pipx tools are not resolved automatically. Use `extraPackages` or `overrides` in `mkShellFromMise` for these.
 - **Single version per tool (without overrides)** — tools like `rust`, `deno`, `bun`, `terraform`, and `kubectl` have one version in nixpkgs; the version string in `mise.toml` is ignored.
 - **Unknown tool** — requesting a tool not in the runtimes or utilities table (and not covered by `overrides`) causes a `builtins.throw` at eval time.
 

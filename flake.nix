@@ -23,23 +23,17 @@
     devShells = forAllSystems (
       system: let
         pkgs = nixpkgs.legacyPackages.${system};
-        miseEnv = self.lib.fromMiseToml ./mise.toml {
+        miseShell = self.lib.mkShellFromMise {
           inherit pkgs;
+          tomlPath = ./mise.toml;
+          extraPackages = [
+            (pkgs.callPackage
+              "${self}/packages/fmt.nix"
+              {})
+          ];
         };
       in {
-        default = pkgs.mkShell (
-          {
-            inherit (miseEnv) shellHook;
-            packages =
-              miseEnv.packages
-              ++ [
-                (pkgs.callPackage
-                  "${self}/packages/fmt.nix"
-                  {})
-              ];
-          }
-          // miseEnv.envVars
-        );
+        default = miseShell;
       }
     );
 

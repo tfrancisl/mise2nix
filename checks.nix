@@ -2,22 +2,10 @@
   self,
   pkgs,
 }: let
-  mise2nix2shell = toml: overrides: let
-    env = self.lib.fromMiseToml toml {
-      inherit pkgs;
-      inherit overrides;
-    };
-  in
-    pkgs.mkShell (
-      {
-        inherit (env) shellHook;
-        inherit (env) packages;
-      }
-      // env.envVars
-    );
+  inherit (self.lib) mkShellFromMise;
 in {
   resolve-simple = let
-    toml = builtins.toFile "mise-default.toml" ''
+    tomlPath = builtins.toFile "mise-default.toml" ''
       [tools]
       node = "22"
       python = "3.11"
@@ -28,7 +16,7 @@ in {
       [env]
       NODE_ENV = "development"
     '';
-    devShell = mise2nix2shell toml {};
+    devShell = mkShellFromMise {inherit tomlPath pkgs;};
   in
     pkgs.runCommand "runtime-resolution" {} ''
       echo "devShell with runtimes: ${devShell}"
@@ -36,13 +24,13 @@ in {
     '';
 
   resolve-latest = let
-    toml = builtins.toFile "mise-latest.toml" ''
+    tomlPath = builtins.toFile "mise-latest.toml" ''
       [tools]
       node = "latest"
       python = "latest"
       go = "latest"
     '';
-    devShell = mise2nix2shell toml {};
+    devShell = mkShellFromMise {inherit tomlPath pkgs;};
   in
     pkgs.runCommand "resolve-latest" {} ''
       echo "devShell with latest: ${devShell}"
@@ -50,12 +38,15 @@ in {
     '';
 
   overrides-work = let
-    toml = builtins.toFile "override-test.toml" ''
+    tomlPath = builtins.toFile "override-test.toml" ''
       [tools]
       node = "22"
     '';
-    devShell = mise2nix2shell toml {
-      node = pkgs.nodejs_20;
+    devShell = mkShellFromMise {
+      inherit tomlPath pkgs;
+      overrides = {
+        node = pkgs.nodejs_20;
+      };
     };
   in
     pkgs.runCommand "overrides-work" {} ''
@@ -64,12 +55,12 @@ in {
     '';
 
   unsupported-version-error = let
-    toml = builtins.toFile "bad-version.toml" ''
+    tomlPath = builtins.toFile "bad-version.toml" ''
       [tools]
       node = "18"
     '';
     # node "18" is not in runtimes.nix map (supported: 20, 22, 24, 25); forces a throw
-    devShell = mise2nix2shell toml {};
+    devShell = mkShellFromMise {inherit tomlPath pkgs;};
     # Force drvPath (not nativeBuildInputs) — deepSeq on nativeBuildInputs causes stack overflow
     result = builtins.tryEval (builtins.seq devShell.drvPath null);
   in
@@ -82,12 +73,12 @@ in {
     '';
 
   unknown-tool-error = let
-    toml = builtins.toFile "unknown-test.toml" ''
+    tomlPath = builtins.toFile "unknown-test.toml" ''
       [tools]
       nonexistent_tool_xyz = "latest"
     '';
     # fromMiseToml returns a lazy mkShell; force drvPath (not nativeBuildInputs) to trigger the throw
-    devShell = mise2nix2shell toml {};
+    devShell = mkShellFromMise {inherit tomlPath pkgs;};
     # Force drvPath (not nativeBuildInputs) — deepSeq on nativeBuildInputs causes stack overflow
     result = builtins.tryEval (builtins.seq devShell.drvPath null);
   in
@@ -100,12 +91,12 @@ in {
     '';
 
   env-var-passthrough = let
-    toml = builtins.toFile "env-test.toml" ''
+    tomlPath = builtins.toFile "env-test.toml" ''
       [env]
       NODE_ENV = "production"
       PORT = "8080"
     '';
-    devShell = mise2nix2shell toml {};
+    devShell = mkShellFromMise {inherit tomlPath pkgs;};
   in
     pkgs.runCommand "env-var-passthrough" {} ''
       if [ "${devShell.NODE_ENV}" != "production" ]; then
@@ -120,12 +111,12 @@ in {
     '';
 
   integer-env-var = let
-    toml = builtins.toFile "int-env-test.toml" ''
+    tomlPath = builtins.toFile "int-env-test.toml" ''
       [env]
       PORT = 8080
     '';
     # builtins.fromTOML parses 8080 as a Nix integer; env.nix must coerce via builtins.toString
-    devShell = mise2nix2shell toml {};
+    devShell = mkShellFromMise {inherit tomlPath pkgs;};
   in
     pkgs.runCommand "integer-env-var" {} ''
       if [ "${devShell.PORT}" != "8080" ]; then
@@ -136,11 +127,11 @@ in {
     '';
 
   resolve-pipx-black = let
-    toml = builtins.toFile "pipx-test.toml" ''
+    tomlPath = builtins.toFile "pipx-test.toml" ''
       [tools]
       "pipx:black" = "latest"
     '';
-    devShell = mise2nix2shell toml {};
+    devShell = mkShellFromMise {inherit tomlPath pkgs;};
   in
     pkgs.runCommand "resolve-pipx-black" {} ''
       echo "devShell: ${devShell}"
@@ -148,11 +139,11 @@ in {
     '';
 
   resolve-npm-prettier = let
-    toml = builtins.toFile "npm-test.toml" ''
+    tomlPath = builtins.toFile "npm-test.toml" ''
       [tools]
       "npm:prettier" = "latest"
     '';
-    devShell = mise2nix2shell toml {};
+    devShell = mkShellFromMise {inherit tomlPath pkgs;};
   in
     pkgs.runCommand "resolve-npm-prettier" {} ''
       echo "devShell: ${devShell}"
@@ -160,11 +151,11 @@ in {
     '';
 
   resolve-cargo-ripgrep = let
-    toml = builtins.toFile "cargo-test.toml" ''
+    tomlPath = builtins.toFile "cargo-test.toml" ''
       [tools]
       "cargo:ripgrep" = "latest"
     '';
-    devShell = mise2nix2shell toml {};
+    devShell = mkShellFromMise {inherit tomlPath pkgs;};
   in
     pkgs.runCommand "resolve-cargo-ripgrep" {} ''
       echo "devShell: ${devShell}"
@@ -172,11 +163,11 @@ in {
     '';
 
   unknown-backend-error = let
-    toml = builtins.toFile "unknown-backend.toml" ''
+    tomlPath = builtins.toFile "unknown-backend.toml" ''
       [tools]
       "ubi:some-tool" = "latest"
     '';
-    devShell = mise2nix2shell toml {};
+    devShell = mkShellFromMise {inherit tomlPath pkgs;};
     # Force drvPath (not nativeBuildInputs) — deepSeq on nativeBuildInputs causes stack overflow
     result = builtins.tryEval (builtins.seq devShell.drvPath null);
   in
@@ -189,11 +180,11 @@ in {
     '';
 
   unmapped-tool-error = let
-    toml = builtins.toFile "unmapped-tool.toml" ''
+    tomlPath = builtins.toFile "unmapped-tool.toml" ''
       [tools]
       "pipx:nonexistent_tool_xyz" = "latest"
     '';
-    devShell = mise2nix2shell toml {};
+    devShell = mkShellFromMise {inherit tomlPath pkgs;};
     # Force drvPath (not nativeBuildInputs) — deepSeq on nativeBuildInputs causes stack overflow
     result = builtins.tryEval (builtins.seq devShell.drvPath null);
   in
@@ -206,11 +197,14 @@ in {
     '';
 
   backend-overrides-win = let
-    toml = builtins.toFile "backend-override.toml" ''
+    tomlPath = builtins.toFile "backend-override.toml" ''
       [tools]
       "pipx:black" = "latest"
     '';
-    devShell = mise2nix2shell toml {"pipx:black" = pkgs.hello;};
+    devShell = mkShellFromMise {
+      inherit tomlPath pkgs;
+      overrides = {"pipx:black" = pkgs.hello;};
+    };
   in
     pkgs.runCommand "backend-overrides-win" {} ''
       echo "devShell with override: ${devShell}"

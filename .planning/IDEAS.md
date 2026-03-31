@@ -1,5 +1,10 @@
 # Ideas
 
+## Near-term
+
+- `mise-installs-dir` nix check — verify MISE_INSTALLS_DIR is set and the derivation contains expected tool structure (core: `bin/` subdir; aqua: binary directly). Planned in 09-02 but not written when redundant checks were pruned.
+- Clarify whether `MISE_AUTO_INSTALL`/`MISE_EXEC_AUTO_INSTALL` are redundant with `MISE_OFFLINE = "1"` and remove if so.
+
 ## Deferred to v0.3.0+
 
 - [tasks] section: convert `[tasks]` entries to shell scripts available in the devShell (TASK-01, TASK-02) — task runner integration is a separate concern from tool resolution

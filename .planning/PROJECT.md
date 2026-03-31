@@ -2,11 +2,11 @@
 
 A Nix flake library that reads `mise.toml` and produces a `devShells` output — no manual Nix required. Inspired by uv2nix: consume a config file, get Nix.
 
-**Core value:** `mise2nix.lib.fromMiseToml ./mise.toml { inherit pkgs; }` produces a working devShell.
+**Core value:** `mise2nix.lib.mkShellFromMise { tomlPath = ./mise.toml; inherit pkgs; }` produces a working devShell. `mkShellInputsFromMise` (returns `{envVars, packages, shellHook}`) is also public for users who need to compose their own shell.
 
 ## Current Milestone: v0.2.0 — complete (2026-03-24)
 
-Phase 09 (mise-integration-layer) is in progress: Plan 09-01 done (`lib/mise-installs.nix` + `MISE_INSTALLS_DIR`); Plan 09-02 partial (shellHook done; README section + nix check pending).
+Phase 09 (mise-integration-layer) is complete: `lib/mise-installs.nix`, `MISE_INSTALLS_DIR`, `MISE_OFFLINE = "1"`, and `shellHook` with `mise activate bash` are all wired in. The `mise-installs-dir` nix check from plan 09-02 was not written (see IDEAS.md).
 
 ## Constraints
 

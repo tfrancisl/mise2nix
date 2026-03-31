@@ -1,5 +1,10 @@
 # Decisions
 
+- 2026-03-30: API renamed `fromMiseToml` → `mkShellFromMise`; `mkShellInputsFromMise` added as public escape hatch returning `{envVars, packages, shellHook}` for callers who need to compose their own shell
+- 2026-03-30: `mkShellFromMise` args extended with `prefixShellHook`, `postfixShellHook`, `extraPackages`, `extraEnvVars` — lets callers augment the shell without losing mise2nix-managed env vars
+- 2026-03-30: `forAllSystems` uses `nixpkgs.lib.systems.flakeExposed` (not an explicit 4-system list) — distributing as a flake means we should expose all systems nixpkgs supports
+- 2026-03-30: `MISE_AUTO_INSTALL = "false"` and `MISE_EXEC_AUTO_INSTALL = "false"` kept alongside `MISE_OFFLINE = "1"` — may be redundant; exact overlap with MISE_OFFLINE not confirmed
+
 - 2026-03-24: Walk up from PWD to filesystem root to find flake.nix; skip patching with warning if not found — avoids surprises in monorepos or unexpected working directories
 - 2026-03-24: flake.nix patching uses pure shell/sed; missing overrides block prints hint rather than fragile injection — AST manipulation is too complex for pure Nix
 - 2026-03-24: Interactive prompt reads from /dev/tty (not stdin); empty input or Ctrl-C aborts with no file modifications — prevents accidental writes when stdin is piped
@@ -17,5 +22,5 @@
 - 2026-03-24: builtins.toFile used for inline TOML fixtures in checks — avoids IFD and keeps checks self-contained
 - 2026-03-24: Resolution cascade order: overrides → runtimes → utilities → throw
 - 2026-03-24: Single-version runtimes (rust, deno, bun, terraform, kubectl) silently map all version strings — no version-specific nixpkgs attrs exist for these
-- 2026-03-24: forAllSystems uses explicit 4-system list via nixpkgs.lib.genAttrs — no flake-utils dependency
+- 2026-03-24: No flake-utils dependency — inline a simple forAllSystems directly (see 2026-03-30 entry for current forAllSystems implementation)
 - 2026-03-24: lib output is NOT wrapped in forAllSystems — fromMiseToml takes pkgs as argument so callers control the system

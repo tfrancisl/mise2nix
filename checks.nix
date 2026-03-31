@@ -2,7 +2,7 @@
   self,
   pkgs,
 }: let
-  inherit (self.lib) mkShellFromMise;
+  inherit (self.lib) mkShellFromMise mkShellInputsFromMise;
 in {
   resolve-simple = let
     tomlPath = builtins.toFile "mise-default.toml" ''
@@ -209,5 +209,117 @@ in {
     pkgs.runCommand "backend-overrides-win" {} ''
       echo "devShell with override: ${devShell}"
       echo "PASS: backend override accepted" > $out
+    '';
+
+  # mise.local.toml: local file overrides base (node 22 → 24)
+  local-toml-overrides = let
+    tomlPath = builtins.toFile "mise-base.toml" ''
+      [tools]
+      node = "22"
+    '';
+    localTomlPath = builtins.toFile "mise-local.toml" ''
+      [tools]
+      node = "24"
+    '';
+    inputs = mkShellInputsFromMise {inherit tomlPath pkgs localTomlPath;};
+    installsDir = inputs.envVars.MISE_INSTALLS_DIR;
+  in
+    pkgs.runCommand "local-toml-overrides" {} ''
+      test -d "${installsDir}/node/24/bin" \
+        || (echo "FAIL: expected node/24/bin from local config (got base node/22)" && exit 1)
+      echo "PASS: local toml overrides base" > $out
+    '';
+
+  # mise.local.toml: local file adds a tool not in base
+  local-toml-additive = let
+    tomlPath = builtins.toFile "mise-base-add.toml" ''
+      [tools]
+      node = "22"
+    '';
+    localTomlPath = builtins.toFile "mise-local-add.toml" ''
+      [tools]
+      python = "3.11"
+    '';
+    inputs = mkShellInputsFromMise {inherit tomlPath pkgs localTomlPath;};
+    installsDir = inputs.envVars.MISE_INSTALLS_DIR;
+  in
+    pkgs.runCommand "local-toml-additive" {} ''
+      test -d "${installsDir}/node/22/bin" \
+        || (echo "FAIL: expected node/22/bin from base config" && exit 1)
+      test -d "${installsDir}/python/3.11" \
+        || (echo "FAIL: expected python/3.11 added by local config" && exit 1)
+      echo "PASS: local toml additive merge works" > $out
+    '';
+
+  # [tasks] string-form run command exported as a script
+  tasks-string-run = let
+    tomlPath = builtins.toFile "tasks-string.toml" ''
+      [tasks.greet]
+      run = "echo hello"
+    '';
+    devShell = mkShellFromMise {inherit tomlPath pkgs;};
+  in
+    pkgs.runCommand "tasks-string-run" {} ''
+      echo "devShell: ${devShell}"
+      echo "PASS: tasks string-run resolved" > $out
+    '';
+
+  # [tasks] array-form run commands joined into a single script
+  tasks-array-run = let
+    tomlPath = builtins.toFile "tasks-array.toml" ''
+      [tasks.check]
+      run = ["echo step1", "echo step2"]
+    '';
+    devShell = mkShellFromMise {inherit tomlPath pkgs;};
+  in
+    pkgs.runCommand "tasks-array-run" {} ''
+      echo "devShell: ${devShell}"
+      echo "PASS: tasks array-run resolved" > $out
+    '';
+
+  # [tasks] shorthand form: task value is a bare string
+  tasks-shorthand = let
+    tomlPath = builtins.toFile "tasks-shorthand.toml" ''
+      [tasks]
+      build = "echo building"
+    '';
+    devShell = mkShellFromMise {inherit tomlPath pkgs;};
+  in
+    pkgs.runCommand "tasks-shorthand" {} ''
+      echo "devShell: ${devShell}"
+      echo "PASS: tasks shorthand resolved" > $out
+    '';
+
+  # No [tasks] section — no error, no task packages
+  tasks-empty = let
+    tomlPath = builtins.toFile "tasks-empty.toml" ''
+      [tools]
+      node = "22"
+    '';
+    devShell = mkShellFromMise {inherit tomlPath pkgs;};
+  in
+    pkgs.runCommand "tasks-empty" {} ''
+      echo "devShell: ${devShell}"
+      echo "PASS: no tasks section works fine" > $out
+    '';
+
+  # MISE_INSTALLS_DIR structure: core tool gets bin/ subdir, aqua tool gets direct symlinks
+  mise-installs-dir-structure = let
+    tomlPath = builtins.toFile "installs-dir-test.toml" ''
+      [tools]
+      node = "22"
+      jq = "latest"
+    '';
+    inputs = mkShellInputsFromMise {inherit tomlPath pkgs;};
+    installsDir = inputs.envVars.MISE_INSTALLS_DIR;
+  in
+    pkgs.runCommand "mise-installs-dir-structure" {} ''
+      # Core tool: node/22/bin/ must exist
+      test -d "${installsDir}/node/22/bin" \
+        || (echo "FAIL: missing node/22/bin (core layout)" && exit 1)
+      # Aqua tool: jq/latest/ must exist with direct binary symlinks
+      test -d "${installsDir}/jq/latest" \
+        || (echo "FAIL: missing jq/latest (aqua layout)" && exit 1)
+      echo "PASS: installs dir structure correct" > $out
     '';
 }

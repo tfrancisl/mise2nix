@@ -1,5 +1,9 @@
 # Decisions
 
+- 2026-03-31: `localTomlPath` added as explicit parameter to `mkShellInputsFromMise`/`mkShellFromMise` — `builtins.toFile` places each file in a separate content-addressed store path so auto-discovery via `dirOf` can't co-locate two files; explicit param wins over auto-discovery when non-null
+- 2026-03-31: `MISE_AUTO_INSTALL`/`MISE_EXEC_AUTO_INSTALL` kept alongside `MISE_OFFLINE=1` — they are complementary, not redundant: MISE_OFFLINE makes installs fail at the network layer, while the AUTO_INSTALL flags skip even attempting to install, preventing spurious offline error messages
+- 2026-03-31: `mise.local.toml` auto-discovery uses `dirOf tomlPath + "/mise.local.toml"` with `builtins.pathExists`; works when the file is git-tracked (included in the flake source), silently ignored when gitignored — explicit `--impure` mode required for untracked local overrides
+
 - 2026-03-30: API renamed `fromMiseToml` → `mkShellFromMise`; `mkShellInputsFromMise` added as public escape hatch returning `{envVars, packages, shellHook}` for callers who need to compose their own shell
 - 2026-03-30: `mkShellFromMise` args extended with `prefixShellHook`, `postfixShellHook`, `extraPackages`, `extraEnvVars` — lets callers augment the shell without losing mise2nix-managed env vars
 - 2026-03-30: `forAllSystems` uses `nixpkgs.lib.systems.flakeExposed` (not an explicit 4-system list) — distributing as a flake means we should expose all systems nixpkgs supports

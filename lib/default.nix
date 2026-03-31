@@ -3,10 +3,28 @@
     tomlPath,
     pkgs,
     overrides ? {},
+    # Explicit local config path. When null, auto-discovers mise.local.toml
+    # next to tomlPath (works for git-tracked files; requires --impure for
+    # gitignored files).
+    localTomlPath ? null,
   }: let
     config = fromTOML (builtins.readFile tomlPath);
-    tools = config.tools or {};
-    env = config.env or {};
+    # Resolve effective local path: explicit arg wins; fall back to auto-discovery.
+    _discoveredLocal = (dirOf tomlPath) + "/mise.local.toml";
+    _effectiveLocal =
+      if localTomlPath != null
+      then localTomlPath
+      else if builtins.pathExists _discoveredLocal
+      then _discoveredLocal
+      else null;
+    localConfig =
+      if _effectiveLocal != null
+      then fromTOML (builtins.readFile _effectiveLocal)
+      else {};
+    # Shallow merge: local takes precedence. Tools are leaf version strings,
+    # so a simple // is sufficient (no nested merge needed).
+    tools = (config.tools or {}) // (localConfig.tools or {});
+    env = (config.env or {}) // (localConfig.env or {});
 
     runtimes = import ./runtimes.nix {inherit lib pkgs;};
     utilities = import ./utilities.nix {inherit pkgs;};
@@ -16,6 +34,7 @@
       cargo = import ./backends/cargo.nix {inherit pkgs;};
     };
     miseInstalls = import ./mise-installs.nix {inherit lib;};
+    tasksMod = import ./tasks.nix {inherit pkgs lib;};
     envMod = import ./env.nix {};
     # Known tool lists derived from backend attrsets at Nix eval time (D-02).
     pipxKnown = builtins.concatStringsSep " " (builtins.attrNames backends.pipx);
@@ -78,6 +97,8 @@
     resolvedPackages = builtins.attrValues resolvedMap;
     miseInstallsDir = miseInstalls.mkMiseInstallsDir pkgs tools resolvedMap;
     envVars = envMod.mkEnvVars env;
+    tasks = config.tasks or {};
+    taskPackages = tasksMod tasks;
   in {
     envVars =
       envVars
@@ -86,12 +107,17 @@
         # declared tools as active without network access or installation.
         MISE_INSTALLS_DIR = miseInstallsDir;
         # Prevent mise from installing tools itself or hitting the network.
+        # MISE_OFFLINE blocks all network access (installs would fail at the
+        # network layer). The AUTO_INSTALL flags go one step further: they skip
+        # even attempting to install, avoiding spurious "offline" error messages
+        # when a user runs `mise install` or enters a directory. Both are needed
+        # for a clean Nix-managed experience.
         MISE_OFFLINE = "1";
         MISE_AUTO_INSTALL = "false";
         MISE_EXEC_AUTO_INSTALL = "false";
         MISE_NOT_FOUND_AUTO_INSTALL = "false";
       };
-    packages = [miseWrapper] ++ resolvedPackages;
+    packages = [miseWrapper] ++ resolvedPackages ++ taskPackages;
     # Auto-activate mise for `nix develop` (bash) users so the prompt hook
     # updates PATH on cd and `mise ls` shows the active toolset.
     # direnv users get MISE_INSTALLS_DIR exported automatically; for fish/zsh/nu
@@ -108,8 +134,9 @@
     extraPackages ? [],
     extraEnvVars ? {},
     overrides ? {},
+    localTomlPath ? null,
   }: let
-    shellInputs = mkShellInputsFromMise {inherit tomlPath pkgs overrides;};
+    shellInputs = mkShellInputsFromMise {inherit tomlPath pkgs overrides localTomlPath;};
   in
     pkgs.mkShell (
       {

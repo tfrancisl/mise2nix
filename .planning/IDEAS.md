@@ -5,13 +5,12 @@
 - `mise-installs-dir` nix check — verify MISE_INSTALLS_DIR is set and the derivation contains expected tool structure (core: `bin/` subdir; aqua: binary directly). Planned in 09-02 but not written when redundant checks were pruned.
 - Clarify whether `MISE_AUTO_INSTALL`/`MISE_EXEC_AUTO_INSTALL` are redundant with `MISE_OFFLINE = "1"` and remove if so.
 
-## Deferred to v0.3.0+
+## Deferred
 
-- [tasks] section: convert `[tasks]` entries to shell scripts available in the devShell (TASK-01, TASK-02) — task runner integration is a separate concern from tool resolution
 - Automated nixpkgs attribute lookup (EXT-01) — avoid manual table maintenance; tables currently curated by hand
 - GitHub release tools via fetchurl + checksums from mise.lock (EXT-02) — too complex for v0.1.0/v0.2.0; currently handled via overrides escape hatch
 - direnv reload triggered automatically after `mise use` (EXT-03) — deferred; interactive reload message is the current UX
-- mise.local.toml merged with mise.toml, local takes precedence (LOCAL-01) — common mise workflow not yet supported
+- Document `extraEnvVars` override ordering in README — `extraEnvVars` merges last and silently wins over `MISE_OFFLINE`/`MISE_AUTO_INSTALL`; intentional escape hatch but currently undocumented
 
 ## Out of Scope
 

@@ -8,7 +8,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [0.2.0] - 2026-03-30
 
+### Breaking
+- `fromMiseToml` renamed to `mkShellFromMise`; update all call sites
+
 ### Added
+- `mkShellInputsFromMise` escape hatch: returns `{envVars, packages, shellHook}` for callers
+  who need to compose their own `mkShell` without losing mise2nix-managed env vars
+- `mkShellFromMise` now accepts `prefixShellHook`, `postfixShellHook`, `extraPackages`,
+  `extraEnvVars` for augmenting the shell without losing managed content
 - Backend tool resolution via `npm:`, `pipx:`, `cargo:` prefix syntax (40+ tools mapped)
 - `mise` wrapper script automatically included in every devShell:
   - `mise use <tool>` writes back to `mise.toml` and prints guidance

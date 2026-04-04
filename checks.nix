@@ -211,46 +211,6 @@ in {
       echo "PASS: backend override accepted" > $out
     '';
 
-  # mise.local.toml: local file overrides base (node 22 → 24)
-  local-toml-overrides = let
-    tomlPath = builtins.toFile "mise-base.toml" ''
-      [tools]
-      node = "22"
-    '';
-    localTomlPath = builtins.toFile "mise-local.toml" ''
-      [tools]
-      node = "24"
-    '';
-    inputs = mkShellInputsFromMise {inherit tomlPath pkgs localTomlPath;};
-    installsDir = inputs.envVars.MISE_INSTALLS_DIR;
-  in
-    pkgs.runCommand "local-toml-overrides" {} ''
-      test -d "${installsDir}/node/24/bin" \
-        || (echo "FAIL: expected node/24/bin from local config (got base node/22)" && exit 1)
-      echo "PASS: local toml overrides base" > $out
-    '';
-
-  # mise.local.toml: local file adds a tool not in base
-  local-toml-additive = let
-    tomlPath = builtins.toFile "mise-base-add.toml" ''
-      [tools]
-      node = "22"
-    '';
-    localTomlPath = builtins.toFile "mise-local-add.toml" ''
-      [tools]
-      python = "3.11"
-    '';
-    inputs = mkShellInputsFromMise {inherit tomlPath pkgs localTomlPath;};
-    installsDir = inputs.envVars.MISE_INSTALLS_DIR;
-  in
-    pkgs.runCommand "local-toml-additive" {} ''
-      test -d "${installsDir}/node/22/bin" \
-        || (echo "FAIL: expected node/22/bin from base config" && exit 1)
-      test -d "${installsDir}/python/3.11" \
-        || (echo "FAIL: expected python/3.11 added by local config" && exit 1)
-      echo "PASS: local toml additive merge works" > $out
-    '';
-
   # [tasks] string-form run command exported as a script
   tasks-string-run = let
     tomlPath = builtins.toFile "tasks-string.toml" ''

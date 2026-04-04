@@ -3,28 +3,11 @@
     tomlPath,
     pkgs,
     overrides ? {},
-    # Explicit local config path. When null, auto-discovers mise.local.toml
-    # next to tomlPath (works for git-tracked files; requires --impure for
-    # gitignored files).
-    localTomlPath ? null,
   }: let
     config = fromTOML (builtins.readFile tomlPath);
-    # Resolve effective local path: explicit arg wins; fall back to auto-discovery.
-    _discoveredLocal = (dirOf tomlPath) + "/mise.local.toml";
-    _effectiveLocal =
-      if localTomlPath != null
-      then localTomlPath
-      else if builtins.pathExists _discoveredLocal
-      then _discoveredLocal
-      else null;
-    localConfig =
-      if _effectiveLocal != null
-      then fromTOML (builtins.readFile _effectiveLocal)
-      else {};
-    # Shallow merge: local takes precedence. Tools are leaf version strings,
-    # so a simple // is sufficient (no nested merge needed).
-    tools = (config.tools or {}) // (localConfig.tools or {});
-    env = (config.env or {}) // (localConfig.env or {});
+
+    tools = config.tools or {};
+    env = config.env or {};
 
     runtimes = import ./runtimes.nix {inherit lib pkgs;};
     utilities = import ./utilities.nix {inherit pkgs;};
@@ -134,9 +117,8 @@
     extraPackages ? [],
     extraEnvVars ? {},
     overrides ? {},
-    localTomlPath ? null,
   }: let
-    shellInputs = mkShellInputsFromMise {inherit tomlPath pkgs overrides localTomlPath;};
+    shellInputs = mkShellInputsFromMise {inherit tomlPath pkgs overrides;};
   in
     pkgs.mkShell (
       {

@@ -1,5 +1,7 @@
 # Decisions
 
+- 2026-04-04: Revert merging the `mise.local.toml` file. Since the file is never git tracked, users would need to use impure mode to add to the env this way. Just use mise globally at that point.
+
 - 2026-03-31: `localTomlPath` added as explicit parameter to `mkShellInputsFromMise`/`mkShellFromMise` — `builtins.toFile` places each file in a separate content-addressed store path so auto-discovery via `dirOf` can't co-locate two files; explicit param wins over auto-discovery when non-null
 - 2026-03-31: `MISE_AUTO_INSTALL`/`MISE_EXEC_AUTO_INSTALL` kept alongside `MISE_OFFLINE=1` — they are complementary, not redundant: MISE_OFFLINE makes installs fail at the network layer, while the AUTO_INSTALL flags skip even attempting to install, preventing spurious offline error messages
 - 2026-03-31: `mise.local.toml` auto-discovery uses `dirOf tomlPath + "/mise.local.toml"` with `builtins.pathExists`; works when the file is git-tracked (included in the flake source), silently ignored when gitignored — explicit `--impure` mode required for untracked local overrides

@@ -19,9 +19,9 @@
         pkgs = nixpkgs.legacyPackages.${system};
       in {
         default = mise2nix.lib.mkShellFromMise {
-            tomlPath = ./mise.toml;
-            inherit pkgs;
-          };
+          tomlPath = ./mise.toml;
+          inherit pkgs;
+        };
       }
     );
   };
